@@ -1,0 +1,4 @@
+.claude/.env
+.claude/settings.local.json
+.claude/state/
+.playwright-mcp/
