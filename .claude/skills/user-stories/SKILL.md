@@ -8,26 +8,6 @@ tools: Read, Edit, Write, AskUserQuestion
 
 Discovery → draft via the Story Spec → Testability Linter on every AC → Validation → Ordering → emit per Notes Rendering.
 
-## INVEST
-
-Every story satisfies all six (first three checked during drafting, last three during validation):
-
-- **Independent** — deliverable without another story first; unavoidable dependencies go in `depends_on_titles`.
-- **Negotiable** — the "what" is fixed, the "how" open; no implementation in the want clause.
-- **Valuable** — observable value to a user or stakeholder; a tautological "so that" means re-run Discovery on intent.
-- **Estimable** — scope clear enough to ballpark; fails on vague scope, unknown dependencies, hidden research.
-- **Small** — completable within a sprint by one team (see Splitting).
-- **Testable** — every AC passes the linter.
-
-## Scope Boundary
-
-User stories capture **user-observable behaviour only**. Out of scope as stories: design tokens, primitives, shared components, schemas, migrations, data models, infrastructure, cross-cutting modules, refactors, spikes.
-
-When foundational work is needed, do not smuggle it in or invent a "technical story":
-
-- Team prerequisite → capture as a separate task/spike (outside this skill); add to `depends_on_titles` only if it blocks the user-observable outcome.
-- User explicitly asked for technical breakdown → stop, say this skill produces user stories only, offer to list the technical work as plain items.
-
 ## Discovery Protocol
 
 Synthesise understanding across the six categories; any gap that would change scope is **blocking**. Probe each:
@@ -39,7 +19,55 @@ Synthesise understanding across the six categories; any gap that would change sc
 5. **Constraints** — platform, compliance, performance, permissions, flows to preserve.
 6. **Edge and failure cases** — invalid input, missing permission, network failure, missing data, repeated action.
 
-Present synthesis + every blocking gap as numbered questions in **one** message; do not draft yet. Re-synthesise on each response until no blocking gaps remain, then confirm in one line before output. Non-blocking ambiguities → resolve with a stated assumption.
+Present synthesis, then ask every blocking gap via **AskUserQuestion** (max 4 questions per call; batch follow-up calls if more) — concrete options per question, not open-ended prose; do not draft yet. Re-synthesise on each response until no blocking gaps remain, then confirm in one line before output. Non-blocking ambiguities → resolve with a stated assumption.
+
+## Scope Boundary
+
+User stories capture **user-observable behaviour only**. Out of scope as stories: design tokens, primitives, shared components, schemas, migrations, data models, infrastructure, cross-cutting modules, refactors, spikes.
+
+When foundational work is needed, do not smuggle it in or invent a "technical story":
+
+- Team prerequisite → capture as a separate task/spike (outside this skill); add to `depends_on_titles` only if it blocks the user-observable outcome.
+- User explicitly asked for technical breakdown → stop, say this skill produces user stories only, offer to list the technical work as plain items.
+
+## Story Spec
+
+Draft each story to this spec — Scope Boundary governs what becomes a story, INVEST (first three) and AC Format govern content, Splitting when too big:
+
+```yaml
+- title: "[Story] <title>"
+  user_story: "As a <role>, I want <action> so that <benefit>"
+  acceptance_criteria:
+    - "<AC>"
+  notes:
+    edge_cases: ["<text>", ...]
+    design_instructions: [{label: "<filename.md>", url: "<url>"}, ...]
+    mockups: [{label: "<filename.html>", url: "<url>"}, ...]
+    references: [{label: "<text>", url: "<url>"}, ...]
+    depends_on_titles: ["<title>", ...]
+```
+
+## INVEST
+
+Every story satisfies all six (first three checked during drafting, last three during validation):
+
+- **Independent** — deliverable without another story first; unavoidable dependencies go in `depends_on_titles`.
+- **Negotiable** — the "what" is fixed, the "how" open; no implementation in the want clause.
+- **Valuable** — observable value to a user or stakeholder; a tautological "so that" means re-run Discovery on intent.
+- **Estimable** — scope clear enough to ballpark; fails on vague scope, unknown dependencies, hidden research.
+- **Small** — completable within a sprint by one team (see Splitting).
+- **Testable** — every AC passes the linter.
+
+## AC Format
+
+- `When X, then Y.` or `Given X, when Y, then Z.`
+- Checklist bullets when the story is about completeness, not behaviour. Don't force Given/When/Then where it doesn't fit.
+- An AC may cite a reference by label instead of restating detail.
+- Target 2–5 ACs; fewer suggests under-specification, more suggests splitting.
+
+## Splitting
+
+A story failing **Small** or with more than ~5 ACs splits. Techniques, in preference order: workflow steps → happy path vs alternates → CRUD operations → data/input variation → interface surface. Never split by technical layer (frontend/backend story) — that violates Independent and Valuable.
 
 ## Testability Linter
 
@@ -57,17 +85,6 @@ On failure choose one:
 
 Cap: more than three rewrites for one story → stop and escalate the whole story.
 
-## AC Format
-
-- `When X, then Y.` or `Given X, when Y, then Z.`
-- Checklist bullets when the story is about completeness, not behaviour. Don't force Given/When/Then where it doesn't fit.
-- An AC may cite a reference by label instead of restating detail.
-- Target 2–5 ACs; fewer suggests under-specification, more suggests splitting.
-
-## Splitting
-
-A story failing **Small** or with more than ~5 ACs splits. Techniques, in preference order: workflow steps → happy path vs alternates → CRUD operations → data/input variation → interface surface. Never split by technical layer (frontend/backend story) — that violates Independent and Valuable.
-
 ## Validation
 
 Across the full set: every Discovery capability covered by ≥1 story's ACs; no duplicate scope; no implementation details as AC outcomes; no foundational work as stories; every cross-story dependency explicit in `depends_on_titles`; no gold-plating (every AC traces to stated intent or a surfaced edge case).
@@ -76,24 +93,7 @@ Across the full set: every Discovery capability covered by ≥1 story's ACs; no 
 
 Dependency depth first (no `depends_on_titles` first), then user value within each depth level.
 
-## Contract
-
-### Story spec
-
-```yaml
-- title: "[Story] <title>"
-  user_story: "As a <role>, I want <action> so that <benefit>"
-  acceptance_criteria:
-    - "<AC>"
-  notes:
-    edge_cases: ["<text>", ...]
-    design_instructions: [{label: "<filename.md>", url: "<url>"}, ...]
-    mockups: [{label: "<filename.html>", url: "<url>"}, ...]
-    references: [{label: "<text>", url: "<url>"}, ...]
-    depends_on_titles: ["<title>", ...]
-```
-
-### Notes rendering
+## Notes Rendering
 
 - **`design_instructions`** — `- Design Instructions: [label](url)`. Multiple → nested list.
 - **`mockups`** — same pattern under `- Mock UI:`.
