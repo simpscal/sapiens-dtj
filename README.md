@@ -1,4 +1,17 @@
-# GitHub-Native Human-Gated AI Workflow
+<div align="center">
+
+# Sapiens-DTJ
+
+**Sapiens Do The Job.**
+
+**A GitHub-native, human-gated AI workflow for Claude Code — AI agents execute the work; sapiens gate every step: requirements, stories, designs, code review, release.**
+
+[![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
+[![Claude Code](https://img.shields.io/badge/Claude_Code-workflow-D97757?style=for-the-badge&logo=anthropic&logoColor=white)](https://claude.com/claude-code)
+
+</div>
+
+---
 
 ## 🤔 Why This Exists
 
