@@ -54,17 +54,27 @@ flowchart LR
 
 ## 🚀 Quick Start
 
-**Prerequisites:** Claude Code CLI, GitHub CLI (`gh`), a GitHub repo with code.
+**Prerequisites:** Claude Code CLI, GitHub CLI (`gh`), and the code repo(s) you want agents to work on.
+
+**Option A — dedicated orchestrator repo (recommended):**
+
+1. Click **Use this template** → create your orchestrator repo (e.g. `myproduct-hub`). Its issues become your requirements, stories, and bugs.
+2. Clone it next to your code repos:
 
 ```bash
-# 1. Clone this workflow repo
-git clone https://github.com/simpscal/sapiens-dtj.git
+ls            # myproduct-api/  myproduct-web/
+gh repo clone <you>/myproduct-hub
+cd myproduct-hub && claude
+```
 
-# 2. Copy the workflow into your existing project
+**Option B — embed in an existing repo:**
+
+```bash
+git clone https://github.com/simpscal/sapiens-dtj.git
 cp -r sapiens-dtj/.claude /path/to/your/project/
 ```
 
-In your project, run `/setup` (pick **All**) to:
+Either way, run `/setup` (pick **All**) to:
 
 - Generate `.claude/skills/project-config/SKILL.md` — registers codebases, detects tech stack, configures migration detection.
 - Generate `PRODUCT.md` — captures vision, value proposition, business model, goals, and strategic direction.
