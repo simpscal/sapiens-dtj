@@ -54,12 +54,11 @@ flowchart LR
 
 ## 🚀 Quick Start
 
-**Prerequisites:** Claude Code CLI, GitHub CLI (`gh`), and the code repo(s) you want agents to work on.
+> **Prerequisites:** [Claude Code CLI](https://claude.com/claude-code) · [GitHub CLI (`gh`)](https://cli.github.com) · the code repo(s) you want agents to work on.
 
-**Option A — dedicated orchestrator repo (recommended):**
+### 1. Get the workflow
 
-1. Click **Use this template** → create your orchestrator repo (e.g. `myproduct-hub`). Its issues become your requirements, stories, and bugs.
-2. Clone it next to your code repos:
+**Option A — dedicated orchestrator repo (recommended).** Click **Use this template** → create your orchestrator repo (e.g. `myproduct-hub`) — its issues become your requirements, stories, and bugs. Clone it next to your code repos:
 
 ```bash
 ls            # myproduct-api/  myproduct-web/
@@ -67,27 +66,31 @@ gh repo clone <you>/myproduct-hub
 cd myproduct-hub && claude
 ```
 
-**Option B — embed in an existing repo:**
+**Option B — embed in an existing repo.** Copy `.claude/` into your project:
 
 ```bash
 git clone https://github.com/simpscal/sapiens-dtj.git
 cp -r sapiens-dtj/.claude /path/to/your/project/
 ```
 
-Either way, run `/setup` (pick **All**) to:
+### 2. Run setup
 
-- Generate `.claude/skills/project-config/SKILL.md` — registers codebases, detects tech stack, configures migration detection.
-- Generate `PRODUCT.md` — captures vision, value proposition, business model, goals, and strategic direction.
-- Create GitHub labels (`requirement`, `user-story`, `bug`, etc.). Safe to re-run.
+Inside Claude Code, run `/setup` and pick **All**. It generates:
 
-Then kick off a sprint:
+| Artifact | Purpose |
+|----------|---------|
+| `.claude/skills/project-config/SKILL.md` | Registers codebases, detects tech stack, configures migration detection |
+| `PRODUCT.md` | Captures vision, value proposition, business model, goals, strategic direction |
+| GitHub labels | `requirement`, `user-story`, `bug`, etc. — safe to re-run |
+
+### 3. Kick off your first sprint
 
 ```
 /feature:requirement:create "Next feature on the backlog"
 ```
 
 > [!TIP]
-> Not sure which command to run? Use `/help-flows` — it asks your intent and prints the exact command to copy-paste.
+> Not sure which command to run? `/help-flows` asks your intent and prints the exact command to copy-paste.
 
 > [!NOTE]
 > Non-disruptive. Only `.claude/` and `PRODUCT.md` are added. Existing issues, PRs, and branches stay untouched.
