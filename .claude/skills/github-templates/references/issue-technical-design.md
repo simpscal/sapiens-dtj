@@ -38,10 +38,10 @@ Part of #<requirement_issue_number>
 ### Components Design
 
 #### Backend
-<New/existing/modified backend components, their responsibilities, and how they interact — ASCII diagram>
+<High-level actors only (endpoint, validator, handler, specification, repository, …) — one-phrase responsibility each, tagged [NEW]/[MODIFIED]/existing. Interconnections via ASCII box-and-arrow diagram. No code-level details: no method signatures, class members, or validation rules. Design decisions go in prose next to the diagram.>
 
 #### Frontend
-<High-level components only: UI components, hooks, and services (API clients / data-fetching layers). Show responsibilities and interactions via ASCII diagram. No internal states, variables, or fine-grained implementation details.>
+<High-level actors only: pages, UI sub-components, API clients, model layers — one-phrase responsibility each, tagged [NEW]/[MODIFIED]/existing. Interconnections via ASCII box-and-arrow diagram. No code-level details: no internal states, hooks wiring, query keys, props, or variables. Design decisions go in prose next to the diagram.>
 
 ### Infrastructure Design
 <Cloud provider resources, networking, deployment topology — ASCII or N/A>
@@ -97,7 +97,7 @@ Part of #<requirement_issue_number>
 | `happy_path` | yes | ASCII sequence diagram. Participants: high-level system modules only — actors (Customer, Admin) and major system boundaries (Web, API, Database, External Service). No implementation details (hooks, query clients, state managers, sub-components). |
 | `unhappy_path` | yes | ASCII sequence: failure scenario + system response |
 | `tech_stack` | yes | New tech only, or `No new technologies — uses existing stack` |
-| `components_design` | yes | Two sections — **Backend** and **Frontend**. Backend: new/existing/modified components, responsibilities, interactions via ASCII diagram. Frontend: high-level UI components, hooks, and services only — no internal states or fine-grained details — responsibilities and interactions via ASCII diagram. No sequence diagrams in either section. |
+| `components_design` | yes | Two sections — **Backend** and **Frontend**. Both: high-level actors only, one-phrase responsibility each, tagged [NEW]/[MODIFIED]/existing, interconnections via ASCII box-and-arrow diagram. No code-level details anywhere: no method signatures, class members, validation rules, query keys, hooks wiring, or prop/state specifics. Design decisions in prose next to the diagram. No sequence diagrams in either section. |
 | `infrastructure_design` | yes | Cloud provider resources, networking, deployment topology — ASCII or `N/A` |
 | `data_models` | yes | ERD/schema with indexes, or `No new data models — uses existing schema` |
 | `api_spec` | yes | Table: Method, Route, Auth, Request, Response, Status Codes |

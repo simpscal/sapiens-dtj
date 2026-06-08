@@ -60,7 +60,11 @@ Delete `$DRAFT` via `Bash: rm`.
 
 ## Provision Sprint
 
-Via the `github` skill, list milestones to determine the next sprint number `$SPRINT_N`, create milestone `Sprint $SPRINT_N` with a one-line goal from the requirement summary (hold `$MILESTONE_ID`), and attach `#$REQ_ISSUE_NUMBER` to milestone `Sprint $SPRINT_N`.
+Via the `github` skill:
+
+1. Run **Next Sprint Number** → `$SPRINT_N`.
+2. Run **Ensure Sprint** for `$SPRINT_N` — create the `Sprint $SPRINT_N` option.
+3. Run **Register Issue on Board** for `#$REQ_ISSUE_NUMBER` — Type `Feature`, Status `Todo`, Sprint `Sprint $SPRINT_N`.
 
 Resolve every codebase the project exposes (api / web / infrastructure paths). Via the `git` skill, for each create the sprint branch for Sprint `$SPRINT_N`.
 

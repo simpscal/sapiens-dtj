@@ -37,7 +37,7 @@ Via the `github` skill, fetch the issue in full (title, body, labels). Guard: mu
 
 > `⛔ Issue #<N> does not have the refactoring label. This mode is for refactoring tasks only.`
 
-Add label `in-progress`.
+Set board Status to `In Progress` and assign the current user to the issue (**Assign Issue**).
 
 Extract from body: Problem Statement, Scope, Technical Approach, Affected Codebases, Definition of Done → `$ISSUE_PLAN`.
 
@@ -95,7 +95,7 @@ Via the `github` skill, run **Notify Implementation Complete** on `#refactor_iss
 - mode = `refactor`.
 - variant = single-PR when exactly one PR exists, else multi-PR (one bullet per codebase).
 - Fresh → posts a new completion comment. Revisit → updates the existing completion comment with the current PR link(s).
-- Labels: add `implemented`; remove `in-progress`.
+- Board: Status → `Implemented`.
 
 ## Next Step
 

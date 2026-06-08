@@ -11,12 +11,16 @@ Merges all Sprint N stories into main.
 - Closes #<N> — <title>
 
 ## Migration notes
-<If migrations:>
-⚠️ EF Core migrations detected — apply before or after deploy:
-  dotnet ef database update
+<If migrations — list each migration's scripts inline, in apply order:>
+⚠️ Migration detected — run the cutover script(s) below manually against production after deploy.
 
-  Files:
-  - <migration file path>
+**<migration name>** — from #<story PR number>
+
+_Up (cutover):_
+<cutover SQL, fenced as ```sql>
+
+_Down (rollback):_
+<rollback SQL, fenced as ```sql>
 
 <If no migrations:>
 No database migrations in this sprint.
@@ -35,5 +39,5 @@ No database migrations in this sprint.
 | Field | Req | Notes |
 |-------|-----|-------|
 | `sprint` | yes | e.g. `Sprint 5` — used in title and description |
-| `stories` | yes | All milestone stories, `- Closes #N — <title>` with em dash, sorted by issue number ascending |
-| `migrations` | yes | Warning block above (with file paths) or `No database migrations in this sprint.` — detected by `**/Migrations/*.cs` |
+| `stories` | yes | All sprint stories, `- Closes #N — <title>` with em dash, sorted by issue number ascending |
+| `migrations` | yes | Warning block above with each migration's cutover + rollback SQL listed inline (in apply order), sourced from the story PR bodies, or `No database migrations in this sprint.` — detection rule from the `project-config` skill |

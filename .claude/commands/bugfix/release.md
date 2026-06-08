@@ -1,6 +1,6 @@
 ---
 name: bugfix:release
-description: Close a bug (production or development) — merge bugfix PRs, label `bug-fixed`, close the issue.
+description: Close a bug (production or development) — merge bugfix PRs, mark Done on the board, close the issue.
 tools: Read, Write, Glob, Grep, Bash, AskUserQuestion
 ---
 
@@ -13,7 +13,7 @@ tools: Read, Write, Glob, Grep, Bash, AskUserQuestion
 2. Parse Arguments
 3. Fetch Issue
 4. Merge Bugfix PRs
-5. Update Labels and Close
+5. Mark Done and Close
 6. Next Step
 
 ## Resume Check
@@ -34,7 +34,7 @@ If `$ARGUMENTS` is empty: list all open issues labeled `bug`, show the results f
 
 ## Fetch Issue
 
-Via the `github` skill, read issue `#issue_number` — title, labels, state, milestone.
+Via the `github` skill, read issue `#issue_number` — title, labels, state.
 
 - If missing the `bug` label, stop:
   ```
@@ -53,11 +53,11 @@ Via the `git` skill, for each codebase repo find open bugfix PRs for issue N and
 ✓ Merged <pr_title> in {codebase_name}
 ```
 
-## Update Labels and Close
+## Mark Done and Close
 
 Via the `github` skill:
 
-1. Add label `bug-fixed`; remove `in-progress` and `implemented`.
+1. Set board Status to `Done`.
 2. Close issue `#issue_number`.
 
 Output:

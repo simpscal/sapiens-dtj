@@ -1,6 +1,6 @@
 ---
 name: refactor:release
-description: Close a refactor task — merge refactor PRs, remove lifecycle labels, close the issue.
+description: Close a refactor task — merge refactor PRs, mark Done on the board, close the issue.
 tools: Read, Write, Glob, Grep, Bash, AskUserQuestion
 ---
 
@@ -53,11 +53,11 @@ Via the `git` skill, for each codebase repo find open refactor PRs for issue N a
 ✓ Merged <pr_title> in {codebase_name}
 ```
 
-## Update Labels and Close
+## Mark Done and Close
 
 Via the `github` skill:
 
-1. Remove `in-progress` and `implemented`.
+1. Set board Status to `Done`.
 2. Close issue `#issue_number`.
 
 Output:

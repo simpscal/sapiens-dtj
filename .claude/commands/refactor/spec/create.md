@@ -32,29 +32,28 @@ Spawn one `Explore` subagent per in-scope codebase **in parallel** with a target
 **Backend** (if in scope):
 
 - Find files, classes, services, patterns to change; coupling points, duplication, structural issues.
+- Include backend tooling and DX: config files, build scripts, manifests, linters, test setup, tool setup files; missing/misconfigured tooling or capability gaps.
 - Additive: identify what is absent and where to introduce it.
-- Return: file paths, class/method names, current pattern, what changes or is added and why.
+- Return: file paths, class/method/tool names, current pattern, what changes or is added and why.
 
 **Frontend** (if in scope):
 
 - Find components, hooks, utilities, state management affected; shared code, duplication, abstraction gaps.
+- Include frontend tooling and DX: config files, build scripts, manifests, linters, test/Storybook setup, tool setup files; missing/misconfigured tooling or capability gaps.
 - Additive: identify missing capabilities and where to introduce them.
-- Return: file paths, component names, current pattern, what changes or is added and why.
+- Return: file paths, component/tool names, current pattern, what changes or is added and why.
 
 **Infrastructure** (if in scope):
 
-- Find Terraform resources, modules, config affected.
+- Find IaC resources, modules, and config affected.
+- Include CI/CD and platform tooling: pipeline definitions, build/deploy scripts, runner config, environment setup; missing/misconfigured tooling or capability gaps.
 - Additive: identify missing pieces and where they belong.
-- Return: file paths, resource names, current pattern, what changes or is added and why.
-
-**Tooling and DX** (if in scope):
-
-- Find config files, CI definitions, build scripts, manifests, tool setup files affected; missing/misconfigured tooling or capability gaps.
-- Return: file paths, tool names, current state, what is missing or changes and why.
+- **Query live state**: for every infrastructure resource mentioned in the problem, call the relevant cloud/platform API to verify actual current state (running/stopped, attached/detached, exists/missing, rule present/absent). Do not assume or ask the user about things that can be confirmed directly via available tooling.
+- Return: file paths, resource/tool names, current pattern, what changes or is added and why; plus live state findings.
 
 ## Resolve Blocking Questions
 
-Try to answer each question from the exploration findings first. Raise only questions the codebase cannot answer. Collect all blockers and present in a single `AskUserQuestion` call.
+Try to answer each question from the exploration findings first — including live infrastructure state queried via cloud APIs. Raise only questions that neither the codebase nor available tooling can answer. Collect all blockers and present in a single `AskUserQuestion` call.
 
 | Category | Decisions to resolve |
 |----------|----------------------|
@@ -77,6 +76,7 @@ Produce:
 - **Motivation** — what this refactor unlocks or improves once complete.
 - **Scope** — bullet list of specific files, modules, config files, pipelines, or layers in scope.
 - **Technical Approach** — numbered steps describing how to execute the refactor in sequence. For tooling/DX changes steps may include: adding config files, installing packages, wiring CI jobs, updating developer setup docs, or enabling flags — not only source-code edits.
+- **Migration Plan** — three bullets, **Data migration** / **Cutover** / **Rollback**, mirroring the TDD's Migration Plan. Carry over whatever the **Migration** blocking question surfaced. Migrations are delivered as scripts run manually against the target database — the deploy pipeline auto-applies none — so state the forward and rollback scripts and that the cutover SQL is documented in the PR body, not committed to the codebase. Verify the script locally during implementation. When nothing migrates, use the single bullet `N/A — no data migration required` rather than omitting the section.
 - **Affected Codebases** — list each codebase and the area of change.
 - **Definition of Done**:
   - Always include: "All existing tests pass" and "No user-visible behavior change".
@@ -108,7 +108,7 @@ Via the `github` skill, create a GitHub issue in the **orchestrator repo**:
 - **Title**: `refactor: <short imperative description>`.
 - **Label**: `refactoring`.
 - **Body**: render the `issue-refactoring` template via the `github-templates` skill with all fields from **Design Refactoring Spec**.
-- **No milestone** — standalone, not sprint-tied.
+- **Board**: via **Register Issue on Board** — Type `Refactor`, Status `Todo`. No Sprint — standalone, not sprint-tied.
 
 Delete `$DRAFT` via `Bash: rm`.
 

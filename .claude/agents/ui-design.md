@@ -132,17 +132,15 @@ If the story ACs do not require changes to the user flow (navigation steps, CTAs
 
 ### Stage 4 — Approval Loop
 
-Present a per-surface design review (job, hierarchy, states, key decisions) for every surface not yet locked.
-
-Ask via `AskUserQuestion`:
+Stories are written. Ask via `AskUserQuestion`:
 
 > Stories written for `<N>` surface(s). Choose:
 >
 > - **Approve** — proceed to verification.
-> - **Adjust** — describe what to change; revise the affected stories and re-present.
+> - **Adjust** — describe what to change in the design; I'll apply it.
 > - **Cancel** — abort; leave the stories on disk.
 
-- **Adjust** — ask via `AskUserQuestion` for `$ADJUSTMENT`. Fold it into the Stage 2 decisions for the affected surfaces, re-run their decision loop, rewrite their `.stories.tsx`, re-present only those surfaces. Approved surfaces are locked
+- **Adjust** — capture the user's described change as `$ADJUSTMENT` (from the "Other" free-text or a follow-up `AskUserQuestion`). Fold it into the Stage 2 decisions for the affected surfaces, re-run their decision loop, rewrite their `.stories.tsx`, then loop back to this question. Repeat until Approve or Cancel.
 - **Cancel** — halt; leave the stories on disk.
 - **Approve** — proceed to Stage 5.
 

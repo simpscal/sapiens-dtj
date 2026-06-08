@@ -1,6 +1,6 @@
 ---
 name: feature:release
-description: Close a feature sprint — merge release PRs, delete story sub-branches, label and close all sprint issues.
+description: Close a feature sprint — merge release PRs, delete story sub-branches, mark all sprint issues Done and close them.
 tools: Read, Write, Glob, Grep, Bash, AskUserQuestion
 ---
 
@@ -12,12 +12,12 @@ tools: Read, Write, Glob, Grep, Bash, AskUserQuestion
 3. Fetch Sprint Snapshot
 4. Merge Release PRs
 5. Delete Story Sub-branches
-6. Label and Close All Sprint Issues
+6. Close All Sprint Issues
 7. Next Step
 
 ## Infer Active Sprint
 
-List open milestones titled `Sprint N`; pick the one with the highest N → `$SPRINT_N`, `$MILESTONE_ID`. Halt if none: `⛔ No open sprint milestone to close.`
+Via the `github` skill, resolve the active sprint → `$SPRINT_N`. Halt if none: `⛔ No sprint on the board to close.`
 
 ## Resume Check
 
@@ -31,7 +31,7 @@ If state exists, ask via `AskUserQuestion`:
 
 ## Fetch Sprint Snapshot
 
-Via the `github` skill, list **all** issues in the milestone (open and closed). For each, note number, title, labels, state.
+Via the `github` skill, list **all** sprint items (open and closed). For each, note number, title, labels, status, state.
 
 Partition into four groups:
 
@@ -60,11 +60,11 @@ Delete each story branch from the remote. Output:
 ✓ Deleted {branch_name} from {codebase_name}
 ```
 
-## Label and Close All Sprint Issues
+## Close All Sprint Issues
 
-Via the `github` skill, for every issue in the milestone (stories, TDD, requirement, design):
+Via the `github` skill, for every issue in the sprint (stories, TDD, requirement, design):
 
-1. Add label `sprint-completed`; remove `in-progress`.
+1. Set board Status to `Done`.
 2. Close the issue.
 
 Output one line per issue:
