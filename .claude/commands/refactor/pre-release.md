@@ -32,7 +32,7 @@ If state exists, ask via `AskUserQuestion`:
 
 Parse `$ARGUMENTS` as the refactor issue number (e.g. `42`).
 
-If `$ARGUMENTS` is empty: list all open issues labeled `refactoring` that also have `implemented`, show the results for the user to choose from, then stop.
+If `$ARGUMENTS` is empty: list all open issues labeled `refactoring` whose board Status is `Implemented`, show the results for the user to choose from, then stop.
 
 ## Fetch Issue
 

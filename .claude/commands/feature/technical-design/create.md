@@ -18,7 +18,7 @@ Navigator supplies `$SPRINT_N`.
 
 ## Load Sprint Context
 
-Via the `github` skill, load Sprint Snapshot for Sprint $SPRINT_N. Hold `$MILESTONE_ID`, `$STORIES`, `$REQUIREMENT`, `$TDD`, `$DESIGN`.
+Via the `github` skill, load Sprint Snapshot for Sprint $SPRINT_N. Hold `$STORIES`, `$REQUIREMENT`, `$TDD`, `$DESIGN`.
 
 Exclude `[Revert]`-prefixed issues from `$STORIES`.
 
@@ -61,18 +61,18 @@ Via the `github` skill, create an issue:
 - Title: `Sprint $SPRINT_N — Technical Design Document`.
 - Body: `$TDD_BODY` rendered from the `issue-technical-design` template via the `github-templates` skill, with `Part of #$REQUIREMENT.issue_number` at the very top.
 - Labels: none (identified by title).
-- Milestone: `$MILESTONE_ID`.
 - Hold the issue number as `$TDD_ISSUE_NUMBER`.
+- Via the `github` skill, run **Register Issue on Board** — Type `Feature`, Status `Todo`, Sprint `Sprint $SPRINT_N`.
 
 ## Persist Technical Stories
 
 Via the `github` skill, for each spec in `$TECHNICAL_STORIES`:
 
-1. Create an issue titled `spec.title` (begins with `[Tech]`), label `user-story`, milestone `$MILESTONE_ID`, body rendered from the `issue-technical-story` template via the `github-templates` skill with `{scope_summary, acceptance_criteria, notes, tdd_issue: $TDD_ISSUE_NUMBER}`.
+1. Create an issue titled `spec.title` (begins with `[Tech]`), label `user-story`, body rendered from the `issue-technical-story` template via the `github-templates` skill with `{scope_summary, acceptance_criteria, notes, tdd_issue: $TDD_ISSUE_NUMBER}`, then register it on the board via **Register Issue on Board** — Type `Feature`, Status `Todo`, Sprint `Sprint $SPRINT_N`.
 
 After all `[Tech]` issues exist, back-fill cross-references:
 
-- Resolve `spec.required_by_titles` → `[Story]` `#id`s in the sprint milestone; write `Required by:` into each `[Tech]` body.
+- Resolve `spec.required_by_titles` → `[Story]` `#id`s in the sprint; write `Required by:` into each `[Tech]` body.
 - Resolve `spec.notes.depends_on_titles` → `[Tech]` `#id`s; write `Depends on:` and `Blocks:` into each `[Tech]` body.
 - For each `[Story]` referenced by any `[Tech]`, append `Depends on: #<tech-issue>` to its Notes.
 

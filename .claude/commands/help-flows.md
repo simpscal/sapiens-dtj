@@ -27,6 +27,8 @@ Ask via `AskUserQuestion` (single, `multiSelect=false`): `What do you want to do
 
 Options (label → stage id):
 
+- **Capture an idea/bug to the backlog** → `backlog-add`
+- **Review or promote backlog items** → `backlog-manage`
 - **Start a new feature** → `feature-start`
 - **Continue current sprint** → `feature-continue`
 - **Change requirement mid-sprint** → `feature-change`
@@ -56,6 +58,8 @@ Look up the chosen stage in the **Stage Map**. For each placeholder, ask via `As
 
 | Stage id | Required args | Command template |
 |---|---|---|
+| `backlog-add` | `[free text]` | `/backlog:add [free text]` |
+| `backlog-manage` | _(none)_ | `/backlog` _(navigator — add / list / promote)_ |
 | `feature-start` | `<description>` | `/feature:requirement:create <description>` |
 | `feature-continue` | _(see sub-stages)_ | Ask: which sub-stage — stories / design / technical-design / implement. Map to `/feature:stories:create <req#>`, `/feature:design:create <sprint>`, `/feature:technical-design:create <sprint>`, `/feature:implement <story#>`. |
 | `feature-change` | `<req#>`, `<delta>` | `/feature:requirement:amend <req#> <delta>` _then suggest follow-ups:_ `/feature:stories:regenerate <req#>`, `/feature:design:regenerate <sprint>`, `/feature:technical-design:regenerate <sprint>`, `/feature:implement <story#>`. |
@@ -71,7 +75,7 @@ Look up the chosen stage in the **Stage Map**. For each placeholder, ask via `As
 | `bugfix-continue` | _(see sub-stages)_ | Ask: which sub-stage — story / implement. Map to `/bugfix:story <bug#>`, `/bugfix:implement <bug#>`. |
 | `refactor-start` | _(none)_ | `/refactor:spec:create` _then:_ `/refactor:implement <refactor#>` |
 | `refactor-amend` | `<refactor#>` | `/refactor:spec:amend <refactor#>` |
-| `setup` | _(none)_ | `/setup` _(navigator — pick all / project-config / labels / product / design)_ |
+| `setup` | _(none)_ | `/setup` _(navigator — pick all / project-config / labels / board / product / design)_ |
 
 ## Output
 
@@ -92,6 +96,12 @@ Then stop. No extra prose, no execution.
 ---
 
 ## Cheat Sheet
+
+### 🗂 Backlog
+
+- `/backlog:add [free text]` — quick-capture an idea, refactor, or bug as a board draft
+- `/backlog:list` — show backlog drafts grouped by type
+- `/backlog:promote` — promote a draft into its typed flow (requirement / refactor spec / bug report)
 
 ### 🆕 Feature (Sprint)
 
@@ -150,6 +160,7 @@ Then stop. No extra prose, no execution.
 - `/setup` — navigator (pick mode or run all)
 - `/setup:project-config` — codebases, tech stack, migration rules
 - `/setup:labels` — GitHub labels
+- `/setup:board` — GitHub Project board (Status / Type / Sprint fields)
 - `/setup:product` — PRODUCT.md
 
 ---

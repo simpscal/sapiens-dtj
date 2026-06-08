@@ -35,15 +35,15 @@ Ask via `AskUserQuestion`, hold as `$SCOPE_DELTA`: `What scope changed for the s
 
 ## Fetch Linked Stories
 
-Determine the sprint milestone from `req_issue_number`'s milestone field.
+Via the `github` skill, determine the sprint from `req_issue_number`'s board Sprint value.
 
-- No milestone → halt: `⛔ Issue #<N> has no sprint milestone. Stories cannot be regenerated until a sprint milestone is assigned.`
+- No board Sprint → halt: `⛔ Issue #<N> has no board Sprint. Stories cannot be regenerated until the sprint is assigned on the board.`
 
-Via the `github` skill, list open issues labelled `user-story` whose title starts with `[Story]` in the sprint milestone. Filter to **Linked stories** — body references `#req_issue_number`. Read each in full.
+Via the `github` skill, list sprint items labelled `user-story` whose title starts with `[Story]`. Filter to **Linked stories** — body references `#req_issue_number`. Read each in full.
 
 Preconditions:
 
-- Linked stories empty → halt: `⛔ No user stories linked to #<req_issue_number> in the sprint milestone. Run /feature:stories:create first.`
+- Linked stories empty → halt: `⛔ No user stories linked to #<req_issue_number> in the sprint. Run /feature:stories:create first.`
 
 ## Classify Scope Changes
 
@@ -93,18 +93,18 @@ Scan every open story involved in this sync. Remove any `Depends on:` or `Blocks
 
 ### 5b — Amend Updatable Stories
 
-Via the `user-stories` skill, for each updatable story reshape its ACs per the scope item driving the amendment. Classify each baseline AC as Kept / Removed / Modified; new entries are Added. Run the testability linter on Added and Modified ACs. Reconstruct the body preserving all sections except `## Acceptance Criteria` (and conditionally `## Notes`). Via the `github` skill, update the story body and remove label `implemented`.
+Via the `user-stories` skill, for each updatable story reshape its ACs per the scope item driving the amendment. Classify each baseline AC as Kept / Removed / Modified; new entries are Added. Run the testability linter on Added and Modified ACs. Reconstruct the body preserving all sections except `## Acceptance Criteria` (and conditionally `## Notes`). Via the `github` skill, update the story body and set board Status back to `Todo`.
 
 ### 5c — Write New Stories
 
-Via the `user-stories` skill, for each new scope item decompose into user stories using the requirement `#req_issue_number` body as context. Apply INVEST, phrase ACs as user-observable behaviour, run the testability linter. Via the `github` skill, for each spec create an issue with the `issue-user-story` template, label `user-story`, milestone set to the sprint milestone, body referencing `#req_issue_number`. After all issues exist, back-fill dependency references for both `Depends on` and `Blocks` directions.
+Via the `user-stories` skill, for each new scope item decompose into user stories using the requirement `#req_issue_number` body as context. Apply INVEST, phrase ACs as user-observable behaviour, run the testability linter. Via the `github` skill, for each spec create an issue with the `issue-user-story` template, label `user-story`, body referencing `#req_issue_number`, then register it on the board via **Register Issue on Board** — Type `Feature`, Status `Todo`, Sprint set. After all issues exist, back-fill dependency references for both `Depends on` and `Blocks` directions.
 
 ### 5d — Remove Obsolete Stories
 
 Via the `github` skill, for each **Removed** or **Orphaned** story scan its comments for an implementation-complete notification:
 
-- **Has implementation-complete comment (merged PRs)** → create a `[Revert] <original-title>` issue under the same sprint milestone with label `user-story`. Body includes `Reverts: #<original>`. ACs describe the rollback (revert merged commits across affected codebases, tests pass, pre-merge behaviour restored). Close the original story.
-- **No implementation-complete comment** → close the story directly.
+- **Has implementation-complete comment (merged PRs)** → create a `[Revert] <original-title>` issue with label `user-story`, registered on the board via **Register Issue on Board** under the same Sprint — Type `Feature`, Status `Todo`. Body includes `Reverts: #<original>`. ACs describe the rollback (revert merged commits across affected codebases, tests pass, pre-merge behaviour restored). Close the original story and set its board Status to `Done`.
+- **No implementation-complete comment** → close the story directly and set its board Status to `Done`.
 
 Delete `$DRAFT` via `Bash: rm`.
 

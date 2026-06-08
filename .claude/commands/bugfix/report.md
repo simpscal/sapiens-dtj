@@ -49,8 +49,8 @@ Hold `$BUG_SOURCE`.
 
 If **Development**:
 
-1. Auto-detect active sprint: list open milestones titled `Sprint N`; pick the one with the highest N → `$SPRINT_N`, `$MILESTONE_ID`. If none found, halt: `⛔ No open sprint milestone found. File as a production bug or create a sprint milestone first.`
-2. List open issues in `$MILESTONE_ID` with `user-story` label. Ask via `AskUserQuestion`: "Which story did this bug originate from?" Present the list for selection → `$ORIGINATING_STORY`.
+1. Auto-detect active sprint: via the `github` skill, resolve the active sprint → `$SPRINT_N`. If none found, halt: `⛔ No sprint on the board. File as a production bug or run /feature:requirement:create first.`
+2. Via the `github` skill, list sprint items with `user-story` label. Ask via `AskUserQuestion`: "Which story did this bug originate from?" Present the list for selection → `$ORIGINATING_STORY`.
 
 ## Create Issue
 
@@ -60,15 +60,15 @@ Via the `github` skill, create an issue conditional on `$BUG_SOURCE`:
 
 - **Title**: `[Bug] <concise description of what is broken>`
 - **Labels**: `["bug"]`
-- **Milestone**: `null`
 - **Body**: render the `issue-bug-report` template via the `github-templates` skill with `{description, steps, expected, actual, severity}`.
+- **Board**: via **Register Issue on Board** — Type `Bug`, Status `Todo`. No Sprint.
 
 **Development:**
 
 - **Title**: `[Dev Bug] <concise description of what is broken>`
 - **Labels**: `["bug"]`
-- **Milestone**: `$MILESTONE_ID`
 - **Body**: render the `issue-bug-report` template via the `github-templates` skill with `{description, steps, expected, actual, severity, originating_story: $ORIGINATING_STORY}`.
+- **Board**: via **Register Issue on Board** — Type `Bug`, Status `Todo`, Sprint `Sprint $SPRINT_N`.
 
 ## Report
 

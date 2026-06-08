@@ -1,6 +1,6 @@
 ---
 name: feature:stories:create
-description: Decompose a requirement into INVEST user stories under a new sprint milestone. Draft + approve gate, then persist to GitHub.
+description: Decompose a requirement into INVEST user stories under the active sprint. Draft + approve gate, then persist to GitHub.
 tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 ---
 
@@ -20,7 +20,7 @@ Read requirement `#$ISSUE_NUMBER` in full. Derive a one-sentence sprint goal fro
 
 If `rewrote_for_testability` is non-empty, surface `N ACs were rewritten for testability — see details below` and the list before continuing.
 
-Read `#$ISSUE_NUMBER`'s milestone field → `$SPRINT_N` and `$MILESTONE_ID`. If absent, halt: `⛔ Issue #$ISSUE_NUMBER has no sprint milestone — provision the sprint via /feature:requirement:create first.`
+Via the `github` skill, read `#$ISSUE_NUMBER`'s board Sprint value → `$SPRINT_N`. If absent, halt: `⛔ Issue #$ISSUE_NUMBER has no board Sprint — provision the sprint via /feature:requirement:create first.`
 
 ## Draft + Approve Loop
 
@@ -45,7 +45,7 @@ Ask via `AskUserQuestion`:
 Via the `github` skill, for each spec in `$STORIES`:
 
 1. Create an issue titled `spec.title` with label `user-story`, body rendered from the `issue-user-story` template via the `github-templates` skill with `{user_story, acceptance_criteria, notes, requirement_issue: $ISSUE_NUMBER}`.
-2. Set milestone `Sprint $SPRINT_N`.
+2. Via the `github` skill, run **Register Issue on Board** — Type `Feature`, Status `Todo`, Sprint `Sprint $SPRINT_N`.
 
 After all issues exist, back-fill dependency references in Notes (resolve `spec.notes.depends_on_titles` to issue numbers) for both `Depends on` and `Blocks` directions.
 

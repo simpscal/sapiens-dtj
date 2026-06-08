@@ -32,11 +32,11 @@ If state exists, ask via `AskUserQuestion`:
 
 Parse `$ARGUMENTS` as the bug issue number (e.g. `42`).
 
-If `$ARGUMENTS` is empty: list all open issues labeled `bug` that also have `implemented`, show the results for the user to choose from, then stop.
+If `$ARGUMENTS` is empty: list all open issues labeled `bug` whose board Status is `Implemented`, show the results for the user to choose from, then stop.
 
 ## Fetch Issue
 
-Via the `github` skill, read issue `#issue_number` — title, labels, state, milestone.
+Via the `github` skill, read issue `#issue_number` — title, labels, state.
 
 - If missing the `bug` label, stop:
   ```

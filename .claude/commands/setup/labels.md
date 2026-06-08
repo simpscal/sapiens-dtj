@@ -29,4 +29,4 @@ Output: `GitHub labels created (or updated).`
 
 Labels created. Print the next command:
 
-- `/setup:product` — generate PRODUCT.md
+- `/setup:board` — provision the GitHub Project board

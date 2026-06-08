@@ -17,13 +17,13 @@ Navigator supplies `$SPRINT_N`.
 
 ## Load Sprint Context
 
-Via the `github` skill, load Sprint Snapshot for Sprint $SPRINT_N → `$MILESTONE_ID`, `$STORIES`, `$REQUIREMENT`, `$DESIGN`.
+Via the `github` skill, load Sprint Snapshot for Sprint $SPRINT_N → `$STORIES`, `$REQUIREMENT`, `$DESIGN`.
 
 Halt if `$DESIGN` is present (the requirement already carries a `## Design Navigation` hub comment): `Design hub already exists on the requirement issue — run /feature:design:regenerate $SPRINT_N to update affected surfaces.`
 
 ## Filter UI Stories
 
-Restrict `$STORIES` to `[Story]`-prefixed titles — exclude `[Tech]` and `[Revert]`. Filter to entries with user-facing UI changes → `$UI_STORIES`. Halt if empty: `No UI work found in this milestone — skipping design phase.`
+Restrict `$STORIES` to `[Story]`-prefixed titles — exclude `[Tech]` and `[Revert]`. Filter to entries with user-facing UI changes → `$UI_STORIES`. Halt if empty: `No UI work found in this sprint — skipping design phase.`
 
 ## Run UI Design
 

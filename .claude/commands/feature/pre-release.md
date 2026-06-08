@@ -19,7 +19,7 @@ tools: Read, Write, Glob, Grep, Bash, AskUserQuestion
 
 ## Infer Active Sprint
 
-List open milestones titled `Sprint N`; pick the one with the highest N → `$SPRINT_N`, `$MILESTONE_ID`. Halt if none: `⛔ No open sprint milestone to check.`
+Via the `github` skill, resolve the active sprint → `$SPRINT_N`. Halt if none: `⛔ No sprint on the board to check.`
 
 ## Resume Check
 
@@ -33,7 +33,7 @@ If state exists, ask via `AskUserQuestion`:
 
 ## Fetch Sprint Snapshot
 
-Via the `github` skill, list **open** issues in the milestone only. For each, note number, title, labels, state.
+Via the `github` skill, list **open** sprint items only. For each, note number, title, labels, status, state.
 
 Partition into four groups:
 
@@ -44,20 +44,20 @@ Partition into four groups:
 
 Guard: a feature sprint must carry a Requirement. If `$REQUIREMENT` is absent, halt: `⛔ Sprint $SPRINT_N has no requirement issue — this command targets feature sprints.`
 
-Derive sprint branch name for sprint N (from milestone title).
+Derive sprint branch name for sprint N.
 
 ## Readiness Gate
 
 For each story still **open** (`[Story]` or `[Tech]`):
 
-- Check labels for `in-progress`.
+- Check its board Status for `In Progress`.
 - For each codebase repo (derive slug: owner from tracker config + directory name from codebase path), list open pull requests for story branches of issue N in each codebase repo to detect any unmerged PRs.
 
-If any open story has an unmerged PR or is still in-progress, stop and output:
+If any open story has an unmerged PR or is still In Progress, stop and output:
 
 ```
 ⛔ Sprint not ready to close. The following stories have unmerged work:
-  - #N <title> (labels: <labels>)
+  - #N <title> (status: <status>)
 
 Merge all story PRs into the sprint branch, then run /feature:pre-release again.
 ```
@@ -66,7 +66,7 @@ If all stories are merged or already closed, check for open dev bugs.
 
 **Dev Bug Gate:**
 
-List open issues in `$MILESTONE_ID` with label `bug` whose title starts with `[Dev Bug]`. If any found, halt:
+From the sprint items, filter to open issues with label `bug` whose title starts with `[Dev Bug]`. If any found, halt:
 
 ```
 ⛔ Sprint not ready to close. Open development bug(s) in Sprint $SPRINT_N:
@@ -105,7 +105,7 @@ If no migration files are found, note: "No database migrations in this sprint."
 
 ## Create Release PRs (Sprint Branch → Main)
 
-Via the `git` skill, for each codebase create a sprint release PR for sprint N with title `feat(sprint-N): {milestone description}`, base `main`, body rendered from the `pr-release` template via the `github-templates` skill.
+Via the `git` skill, for each codebase create a sprint release PR for sprint N with title `feat(sprint-N): {one-line sprint goal from the requirement}`, base `main`, body rendered from the `pr-release` template via the `github-templates` skill.
 
 ## Post Sprint Summary
 

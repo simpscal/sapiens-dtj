@@ -63,7 +63,7 @@ Cover every area in this order. Write `N/A — <reason>` where inapplicable. Use
 | 4 | `event_schemas` | Topic, structure, producer, consumer — or `N/A` |
 | 5 | `happy_path` | sequence diagram. Participants must be high-level system modules only: actors (e.g. Customer, Admin) and major system boundaries (e.g. Web, API, Database, External Service). Omit all implementation details — internal libraries, state managers, hooks, query clients, and sub-components must not appear as participants. |
 | 6 | `unhappy_path` | Key failure scenario and system response |
-| 7 | `components_design` | **Backend** + **Frontend** sub-sections. Components, responsibilities, interactions via ASCII diagram. |
+| 7 | `components_design` | **Backend** + **Frontend** sub-sections. High-level actors only (e.g. endpoint, validator, handler, specification, repository; page, UI sub-component, API client, model layer) — one-phrase responsibility each, tagged `[NEW]`/`[MODIFIED]`/existing; interconnections shown via ASCII box-and-arrow diagram. No code-level details: no method signatures, class members, validation rules, query keys, hooks wiring, or prop/state specifics. Design decisions (contracts, ordering guarantees, where a responsibility lives) go in prose next to the diagram. |
 | 8 | `infrastructure_design` | Cloud resources added/modified; IaC changes. `None` if unchanged. |
 | 9 | `tech_stack` | New languages/frameworks/libraries/infra only |
 | 10 | `security` | Auth, authz, encryption at rest and in transit |
@@ -118,6 +118,7 @@ When revising, compare the revised TDD against each user story (ignore `[Tech]` 
 - Follow the Canonical Sections order — do not reorder.
 - Make risks and trade-offs explicit; if you rejected an alternative, say why in one line.
 - Use tables for contracts, schemas, and failure modes; ASCII art for diagrams.
+- Keep Components Design at actor level — high-level actors and their interconnections only; implementation specifics (signatures, members, query keys, state wiring) never appear anywhere in the TDD.
 - Ground every decision in codebase context — cite file paths, existing components, conventions. Justify any divergence.
 
 ## Constraints

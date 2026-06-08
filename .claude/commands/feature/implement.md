@@ -34,7 +34,7 @@ If state exists, ask via `AskUserQuestion`:
 
 ## Fetch Story
 
-Via the `github` skill, fetch issue `#story_issue_number` in full (title, body, labels, comments). Hold `$SPRINT_N` from milestone title (`Sprint N`). Reject if missing `user-story` label: `⚠️ Issue #<N> is not a story (labels: <labels>).` Add label `in-progress`.
+Via the `github` skill, fetch issue `#story_issue_number` in full (title, body, labels, comments). Hold `$SPRINT_N` from the issue's board Sprint value (`Sprint N`). Reject if missing `user-story` label: `⚠️ Issue #<N> is not a story (labels: <labels>).` Set board Status to `In Progress` and assign the current user to the issue (**Assign Issue**).
 
 Validate the title prefix — it must begin with `[Story]` or `[Tech]`. Otherwise halt: `⚠️ Issue #<N> title "<title>" must begin with [Story] or [Tech].`
 
@@ -111,7 +111,7 @@ Via the `github` skill, run **Notify Implementation Complete** on `#story_issue_
 - mode = `implementation`.
 - variant = single-PR when exactly one PR exists, else multi-PR (one bullet per codebase).
 - Fresh → posts a new completion comment. Revisit → updates the existing completion comment with the current PR link(s).
-- Labels: add `implemented`; remove `in-progress`.
+- Board: Status → `Implemented`.
 
 ## Next Step
 

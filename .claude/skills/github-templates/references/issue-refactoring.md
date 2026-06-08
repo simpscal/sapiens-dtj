@@ -34,6 +34,11 @@
 **Verification & Cleanup** (cross-cutting, run after all codebase groups finish):
 1. <step>
 
+### Migration Plan
+- **Data migration**: <schema / data / state that must migrate, or none>
+- **Cutover**: <forward migration delivered as a script run manually against the target database at release; documented in the PR body, not auto-applied on deploy>
+- **Rollback**: <reverse script that undoes the change, run manually>
+
 ### Affected Codebases
 - <backend | frontend | infrastructure>
 
@@ -53,5 +58,6 @@
 | `motivation` | yes | 1–2 sentences — what improves or becomes possible |
 | `scope` | yes | Bullet list of specific files, modules, or layers |
 | `technical_approach` | yes | Group steps under fixed subheadings — Pre-flight, Infrastructure, Backend, Frontend, Verification & Cleanup — in that order. Skip groups whose codebase is not affected. Number steps within each group (`1.` resets per group). |
+| `migration` | yes | Three bullets — **Data migration**, **Cutover**, **Rollback** — or the single bullet `N/A — no data migration required`. Migrations are delivered as scripts run manually against the target database (forward + rollback), documented in the PR body rather than auto-applied on deploy. |
 | `affected_codebases` | yes | `backend` \| `frontend` \| `infrastructure` — one per line |
 | `definition_of_done` | yes | Always include "All existing tests pass" and "No user-visible behavior change"; add specifics |

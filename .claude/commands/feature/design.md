@@ -21,9 +21,9 @@ Ask via `AskUserQuestion` → `$MODE`:
 
 ## Resolve Target
 
-List open milestones titled `Sprint N`; pick the one with the highest N → `$SPRINT_N`, `$MILESTONE_ID`. Halt if none: `⛔ No open sprint milestone — run /feature:requirement:create first.`
+Via the `github` skill, resolve the active sprint → `$SPRINT_N`. Halt if none: `⛔ No sprint on the board — run /feature:requirement:create first.`
 
-Find the issue in `$MILESTONE_ID` labelled `requirement` → `$ISSUE_NUMBER`. Halt if absent: `⛔ Sprint $SPRINT_N has no requirement issue.`
+List sprint items; find the item labelled `requirement` → `$ISSUE_NUMBER`. Halt if absent: `⛔ Sprint $SPRINT_N has no requirement issue.`
 
 ## Resume Check
 
@@ -37,4 +37,4 @@ If state exists, ask via `AskUserQuestion`:
 
 ## Dispatch
 
-Read `feature/design/<$MODE>.md` and follow it from its first step. `$SPRINT_N`, `$MILESTONE_ID`, and `$ISSUE_NUMBER` (the requirement) are already in scope.
+Read `feature/design/<$MODE>.md` and follow it from its first step. `$SPRINT_N` and `$ISSUE_NUMBER` (the requirement) are already in scope.

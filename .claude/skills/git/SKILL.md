@@ -65,7 +65,7 @@ Before any mutating op: summarise all planned mutations in one block, ask once `
 | Revert | `revert/issue-{N}-{short-description}` | `main` |
 | Refactor | `refactor/issue-{N}-{short-description}` | `main` |
 
-**Production vs. development bug** (when unspecified): sprint milestone → development, branch from the sprint branch. No milestone (or not a `Sprint N`) → production, branch from `main`. Ambiguous → ask.
+**Production vs. development bug** (when unspecified): board Sprint value set → development, branch from the sprint branch. No board Sprint → production, branch from `main`. Ambiguous → ask.
 
 **`short-description` derivation:**
 

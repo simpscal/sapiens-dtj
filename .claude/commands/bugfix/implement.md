@@ -34,7 +34,7 @@ If state exists, ask via `AskUserQuestion`:
 
 ## Fetch Bug Issue
 
-Via the `github` skill, fetch issue `#bug_issue_number` in full (title, body, labels, comments, milestone).
+Via the `github` skill, fetch issue `#bug_issue_number` in full (title, body, labels, comments).
 
 Guard: must have label `bug`. If absent, halt:
 
@@ -45,11 +45,11 @@ Derive `$BUG_SOURCE` from the title prefix (match `[Dev Bug]` before `[Bug]`):
 - Title starts with `[Dev Bug]` → `$BUG_SOURCE = development`
 - Else title starts with `[Bug]` → `$BUG_SOURCE = production`
 
-If `$BUG_SOURCE = development`: resolve `$SPRINT_N` from the issue's milestone title (`Sprint N`). If no milestone, halt:
+If `$BUG_SOURCE = development`: resolve `$SPRINT_N` from the issue's board Sprint value (`Sprint N`). If no board Sprint, halt:
 
-> `⛔ Dev bug #<N> has no milestone. Assign it to the active sprint milestone first.`
+> `⛔ Dev bug #<N> has no board Sprint. Assign it to the active sprint on the board first.`
 
-Add label `in-progress`.
+Set board Status to `In Progress` and assign the current user to the issue (**Assign Issue**).
 
 Detect mode by scanning comments for an implementation-complete notification:
 
@@ -122,7 +122,7 @@ Via the `github` skill, run **Notify Implementation Complete** on `#bug_issue_nu
 - mode = `implementation`.
 - variant = single-PR when exactly one PR exists, else multi-PR (one bullet per codebase).
 - Fresh → posts a new completion comment. Revisit → updates the existing completion comment with the current PR link(s).
-- Labels: add `implemented`; remove `in-progress`.
+- Board: Status → `Implemented`.
 
 ## Next Step
 

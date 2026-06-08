@@ -17,14 +17,14 @@ Merge **one story per invocation**. Parse `$ARGUMENTS`: the single token is `sto
 
 ## Fetch Story
 
-Via the `github` skill, fetch issue `#story_issue_number` in full (title, labels, milestone, comments).
+Via the `github` skill, fetch issue `#story_issue_number` in full (title, labels, comments).
 
 Guards:
 
 - Missing `user-story` label → halt: `⚠️ Issue #<N> is not a story (labels: <labels>).`
 - Title not prefixed `[Story]`, `[Tech]`, or `[Revert]` → halt: `⚠️ Issue #<N> title "<title>" must begin with [Story], [Tech], or [Revert].`
 
-Derive `$SPRINT_N` from the milestone title (`Sprint N`); build `$SPRINT_BRANCH = feature/sprint-<$SPRINT_N>`.
+Derive `$SPRINT_N` from the issue's board Sprint value (`Sprint N`); build `$SPRINT_BRANCH = feature/sprint-<$SPRINT_N>`.
 
 Locate the completion comment — body starts `## Implementation Complete` **or** `## Revert Ready`. Use the latest such comment → `$COMPLETION_COMMENT`. If neither exists, halt: `⛔ Issue #<N> has no Implementation Complete or Revert Ready comment — run /feature:implement <N> first.`
 

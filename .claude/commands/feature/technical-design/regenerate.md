@@ -27,7 +27,7 @@ Ask via `AskUserQuestion` → `$REGEN_SOURCE`:
 
 ## Load Sprint Context
 
-Via the `github` skill, load Sprint Snapshot for Sprint $SPRINT_N. Hold `$MILESTONE_ID`, `$STORIES`, `$REQUIREMENT`, `$TDD`, `$DESIGN`.
+Via the `github` skill, load Sprint Snapshot for Sprint $SPRINT_N. Hold `$STORIES`, `$REQUIREMENT`, `$TDD`, `$DESIGN`.
 
 Preconditions (halt if any fail):
 
@@ -93,7 +93,7 @@ Ask via `AskUserQuestion`:
 
 Via the `github` skill, update the body of the TDD issue with `$NEW_BODY`. Hold its number as `$TDD_ISSUE_NUMBER`.
 
-For every `[Story]` issue classified `breaking` or `structural` in `$SCOPE_CLASSIFICATION_TABLE`, remove label `implemented` — the TDD change invalidates its implementation.
+For every `[Story]` issue classified `breaking` or `structural` in `$SCOPE_CLASSIFICATION_TABLE`, set board Status back to `Todo` — the TDD change invalidates its implementation.
 
 ## Reconcile Technical Stories
 
@@ -101,9 +101,9 @@ Via the `github` skill, for each row in `$TECHNICAL_STORIES_DELTA`:
 
 | Action | Tracker mutation |
 |--------|------------------|
-| `added` | Create a `[Tech]` issue — label `user-story`, milestone `$MILESTONE_ID`, body rendered from the `issue-technical-story` template via the `github-templates` skill referencing `#$TDD_ISSUE_NUMBER`. Back-fill `Required by:` → `[Story]` `#id`s and `Depends on:` → `[Tech]` `#id`s; append `Depends on: #<tech-issue>` to each referenced `[Story]`'s Notes. |
-| `modified` | Look up the matching `[Tech]` issue by title; rewrite the body; re-back-fill cross-refs; if `required_by_titles` changed, update affected `[Story]` Notes. Remove label `implemented`. |
-| `removed` | Scan the matching `[Tech]` issue's comments for an implementation-complete notification. **Has implementation-complete comment (merged PRs)** → create a `[Revert] <original-title>` issue under the same sprint milestone with label `user-story`, body includes `Reverts: #<original>`, ACs describe the rollback; close the original. **No implementation-complete comment** → close the issue directly. Drop the matching `Depends on:` bullet from every `[Story]` that referenced it. |
+| `added` | Create a `[Tech]` issue — label `user-story`, body rendered from the `issue-technical-story` template via the `github-templates` skill referencing `#$TDD_ISSUE_NUMBER`, registered on the board via **Register Issue on Board** — Type `Feature`, Status `Todo`, Sprint `Sprint $SPRINT_N`. Back-fill `Required by:` → `[Story]` `#id`s and `Depends on:` → `[Tech]` `#id`s; append `Depends on: #<tech-issue>` to each referenced `[Story]`'s Notes. |
+| `modified` | Look up the matching `[Tech]` issue by title; rewrite the body; re-back-fill cross-refs; if `required_by_titles` changed, update affected `[Story]` Notes. Set board Status back to `Todo`. |
+| `removed` | Scan the matching `[Tech]` issue's comments for an implementation-complete notification. **Has implementation-complete comment (merged PRs)** → create a `[Revert] <original-title>` issue with label `user-story`, registered on the board under the same Sprint, body includes `Reverts: #<original>`, ACs describe the rollback; close the original and set its board Status to `Done`. **No implementation-complete comment** → close the issue directly and set its board Status to `Done`. Drop the matching `Depends on:` bullet from every `[Story]` that referenced it. |
 | `unchanged` | Skip. |
 
 Delete `$DRAFT` via `Bash: rm`.

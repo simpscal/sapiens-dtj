@@ -21,7 +21,7 @@ Ask via `AskUserQuestion` → `$MODE`:
 
 ## Infer Active Sprint
 
-List open milestones titled `Sprint N`; pick the one with the highest N → `$SPRINT_N`, `$MILESTONE_ID`. Halt if none: `⛔ No open sprint milestone — run /feature:requirement:create first.`
+Via the `github` skill, resolve the active sprint → `$SPRINT_N`. Halt if none: `⛔ No sprint on the board — run /feature:requirement:create first.`
 
 ## Resume Check
 

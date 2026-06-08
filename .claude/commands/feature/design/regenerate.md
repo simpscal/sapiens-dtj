@@ -27,7 +27,7 @@ Ask via `AskUserQuestion` → `$REGEN_SOURCE`:
 
 ## Load Sprint Context
 
-Via the `github` skill, load Sprint Snapshot for Sprint $SPRINT_N → `$MILESTONE_ID`, `$STORIES`, `$REQUIREMENT`, `$DESIGN`.
+Via the `github` skill, load Sprint Snapshot for Sprint $SPRINT_N → `$STORIES`, `$REQUIREMENT`, `$DESIGN`.
 
 Halt if any precondition fails:
 

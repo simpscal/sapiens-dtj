@@ -37,9 +37,9 @@ Derive `$BUG_SOURCE` from the title prefix (match `[Dev Bug]` before `[Bug]`):
 
 Development only. Production → skip; leave the baseline unset.
 
-If `$BUG_SOURCE = development`: resolve `$SPRINT_N` from the issue's milestone title (`Sprint N`). If no milestone, halt:
+If `$BUG_SOURCE = development`: resolve `$SPRINT_N` from the issue's board Sprint value (`Sprint N`). If no board Sprint, halt:
 
-> `⛔ Dev bug #<N> has no milestone. Assign it to the active sprint milestone first.`
+> `⛔ Dev bug #<N> has no board Sprint. Assign it to the active sprint on the board first.`
 
 Via the `github` skill, **Load Sprint Snapshot** for `$SPRINT_N` → `$STORIES` and `$REQUIREMENT` (open `requirement` issue; may be absent).
 

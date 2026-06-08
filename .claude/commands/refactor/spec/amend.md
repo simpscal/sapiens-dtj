@@ -67,7 +67,7 @@ Spawn one `Explore` subagent per newly-in-scope area **in parallel**. Per-role b
 
 **Frontend**: components, hooks, utilities, state management affected; shared code, duplication, abstraction gaps. Return: file paths, component names, current pattern, what changes and why.
 
-**Infrastructure**: Terraform resources, modules, config affected. Return: file paths, resource names, current pattern, what changes and why.
+**Infrastructure**: IaC resources, modules, config affected. **Query live state**: for every infrastructure resource newly in scope, call the relevant cloud/platform API to verify actual current state (running/stopped, attached/detached, exists/missing, rule present/absent) — do not assume or ask the user about things that can be confirmed directly via available tooling. Return: file paths, resource names, current pattern, what changes and why; plus live state findings.
 
 Skip if the change stays within the existing Scope.
 
@@ -83,6 +83,7 @@ For each section, decide whether the confirmed change affects it — keep unchan
 | Motivation | What the refactor unlocks has shifted |
 | Scope | Files/modules added or removed |
 | Technical Approach | Steps reordered, replaced, or added |
+| Migration Plan | Data migration, cutover, or rollback script added, changed, or no longer needed (set to `N/A — no data migration required` when obsolete) |
 | Affected Codebases | Codebase added or dropped |
 | Definition of Done | New objective criterion or one no longer applies |
 

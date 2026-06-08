@@ -23,8 +23,8 @@ Ask via `AskUserQuestion` → `$MODE`:
 
 - **Create**: ask via `AskUserQuestion` for `$DESCRIPTION` — free-text requirement description.
 - **Amend**:
-  1. List open milestones titled `Sprint N`; pick the one with the highest N → `$SPRINT_N`, `$MILESTONE_ID`. Halt if none: `⛔ No open sprint milestone — run /feature:requirement:create first.`
-  2. Find the issue in `$MILESTONE_ID` labelled `requirement` → `$ISSUE_NUMBER`. Halt if absent: `⛔ Sprint $SPRINT_N has no requirement issue.`
+  1. Via the `github` skill, resolve the active sprint → `$SPRINT_N`. Halt if none: `⛔ No sprint on the board — run /feature:requirement:create first.`
+  2. Via the `github` skill, list sprint items; find the item labelled `requirement` → `$ISSUE_NUMBER`. Halt if absent: `⛔ Sprint $SPRINT_N has no requirement issue.`
   3. Ask via `AskUserQuestion` for `$DELTA` — free-text describing the change to apply to `#$ISSUE_NUMBER`.
 
 ## Resume Check
