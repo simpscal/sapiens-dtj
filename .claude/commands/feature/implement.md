@@ -8,7 +8,7 @@ tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 Implement **one story per invocation** — do not batch.
 
-Parse `$ARGUMENTS`: leading token is `story_issue_number`; remaining text is `$PHASE_INTENT` (optional).
+Parse `$ARGUMENTS`: leading token = `story_issue_number`; remaining text = `$PHASE_INTENT` (optional).
 
 ## Workflow
 1. Resume Check
@@ -24,54 +24,52 @@ Parse `$ARGUMENTS`: leading token is `story_issue_number`; remaining text is `$P
 
 ## Resume Check
 
-Look up resume state (`workflow = feature`, `run_key = implement-<story_issue_number>`).
+Look up resume state (`workflow = feature`, `run_key = implement-<story_issue_number>`). Exists → ask via `AskUserQuestion`:
 
-If state exists, ask via `AskUserQuestion`:
-
-- **Resume** — jump past completed steps; replay stored decisions and artifacts.
-- **Restart** — clear state; start from **Fetch Story**.
-- **Cancel** — abort; leave state untouched.
+- **Resume** → skip completed steps; replay stored decisions + artifacts.
+- **Restart** → clear state; start from **Fetch Story**.
+- **Cancel** → abort; leave state untouched.
 
 ## Fetch Story
 
-Via the `github` skill, fetch issue `#story_issue_number` in full (title, body, labels, comments). Hold `$SPRINT_N` from the issue's board Sprint value (`Sprint N`). Reject if missing `user-story` label: `⚠️ Issue #<N> is not a story (labels: <labels>).` Set board Status to `In Progress` and assign the current user to the issue (**Assign Issue**).
+Via `github` skill, fetch issue `#story_issue_number` in full (title, body, labels, comments). Hold `$SPRINT_N` from board Sprint (`Sprint N`).
 
-Validate the title prefix — it must begin with `[Story]` or `[Tech]`. Otherwise halt: `⚠️ Issue #<N> title "<title>" must begin with [Story] or [Tech].`
+- Missing `user-story` label → halt `⚠️ Issue #<N> is not a story (labels: <labels>).`
+- Title not `[Story]` / `[Tech]` → halt `⚠️ Issue #<N> title "<title>" must begin with [Story] or [Tech].`
 
-Detect mode by scanning comments for an implementation-complete notification:
+Set board Status `In Progress` → assign current user (**Assign Issue**).
 
-- Comment found → **Revisit**. Parse PR links from the comment body → `$IMPL_PRS`.
-- No such comment → **Fresh**.
+Detect mode — scan comments for an implementation-complete notification:
+
+- Comment found → **Revisit**. Parse PR links → `$IMPL_PRS`.
+- No comment → **Fresh**.
 
 ## Branch Prep
 
-Resolve every codebase the project exposes → `$CODEBASES`.
+Resolve every codebase → `$CODEBASES`.
 
-**Fresh:** via the `git` skill, for each codebase create a story branch for issue `<N>` from the sprint branch and push. Check out.
-
-**Revisit:** via the `git` skill, for each entry in `$IMPL_PRS` check PR state:
-
-- **Open PR** → check out the existing PR branch.
-- **Merged PR** → create a new story branch from the sprint branch and push. Hold the merged PR's commit list for delta comparison.
+- **Fresh:** via `git` skill, per codebase → create a story branch for issue `<N>` from the sprint branch → push → check out.
+- **Revisit:** via `git` skill, per `$IMPL_PRS` entry, check PR state:
+  - **Open PR** → check out the existing PR branch.
+  - **Merged PR** → create a new story branch from the sprint branch → push. Hold the merged PR's commit list for delta comparison.
 
 ## Load Artifacts
 
-Via the `github` skill, load Sprint Snapshot for the sprint → `$TDD`, `$DESIGN`.
+Via `github` skill, load Sprint Snapshot → `$TDD`, `$DESIGN`.
 
-If `$TDD` present, read its body in full → `$TDD_ISSUE`.
-
-If `$DESIGN` present, from its **Surfaces** table pick the rows whose surfaces this story touches and read their linked Storybook story files → `$DESIGN_CONTEXT`. If `$DESIGN` is absent or no surface applies, leave `$DESIGN_CONTEXT` unset.
+- `$TDD` present → read body in full → `$TDD_ISSUE`.
+- `$DESIGN` present → from its **Surfaces** table, pick rows whose surfaces this story touches → read linked Storybook story files → `$DESIGN_CONTEXT`. Absent or no surface applies → leave `$DESIGN_CONTEXT` unset.
 
 ## Classify Change Origin
 
-Revisit only. Ask via `AskUserQuestion`, hold the answer as `$CHANGE_ORIGIN`:
+Revisit only. Ask via `AskUserQuestion` → `$CHANGE_ORIGIN`:
 
-- **Upstream update** — an artifact changed (ACs, design context, or TDD). Build the `delta` by diffing the PR branch against the current artifacts.
-- **Phase intent** — this run is driven by a direct instruction. Use `$PHASE_INTENT` as the dispatch directive and scope the `delta` to it. If `$PHASE_INTENT` is absent, ask for it in the same prompt.
+- **Upstream update** — an artifact changed (ACs, design context, or TDD). Build `delta` by diffing the PR branch against current artifacts.
+- **Phase intent** — run driven by a direct instruction. Use `$PHASE_INTENT` as dispatch directive, scope `delta` to it. Absent → ask in the same prompt.
 
 ## Dispatch Agents
 
-Via the `dispatch-agents` skill, dispatch backend/frontend/devops agents with:
+Via `dispatch-agents` skill, dispatch backend/frontend/devops agents with:
 
 | Parameter | Value |
 |---|---|
@@ -80,15 +78,13 @@ Via the `dispatch-agents` skill, dispatch backend/frontend/devops agents with:
 | `agents` | `all` |
 | `tdd_issue` | `$TDD_ISSUE` (if loaded) |
 | `design_context` | `$DESIGN_CONTEXT` (if loaded) |
-| `delta` | Revisit only: `{satisfied, to_add, to_remove, to_rewrite, affected_files}`. `$CHANGE_ORIGIN = upstream` → compare the PR branch state (open PR) or merged commit changes (merged PR) against current ACs, design context, and TDD. `$CHANGE_ORIGIN = phase` → derive the delta from `$PHASE_INTENT` |
+| `delta` | Revisit only: `{satisfied, to_add, to_remove, to_rewrite, affected_files}`. `$CHANGE_ORIGIN = upstream` → compare PR branch state (open PR) or merged commit changes (merged PR) against current ACs, design context, TDD. `$CHANGE_ORIGIN = phase` → derive from `$PHASE_INTENT` |
 
 Receive `$AGENT_RESULTS`.
 
 ## Commit and Push
 
-Via the `git` skill, for each codebase with `files_changed` in `$AGENT_RESULTS`:
-
-Commit: `feat(#<N>): <description>` (`[Story]` title) or `chore(#<N>): <description>` (`[Tech]` title) and push. Derive `<description>`:
+Via `git` skill, per codebase with `files_changed` in `$AGENT_RESULTS` → commit `feat(#<N>): <description>` (`[Story]`) or `chore(#<N>): <description>` (`[Tech]`) → push. `<description>`:
 
 - Fresh → imperative summary of the implemented work.
 - Revisit, `$CHANGE_ORIGIN = upstream` → `update <short description> per story change`.
@@ -96,26 +92,26 @@ Commit: `feat(#<N>): <description>` (`[Story]` title) or `chore(#<N>): <descript
 
 ## Open PR
 
-Via the `git` skill, for each codebase that produced work open a PR:
+Via `git` skill, per codebase that produced work → open a PR:
 
 - Base: sprint branch.
 - Title: `feat(#<N>): <short description>` (`[Story]`) or `chore(#<N>): <short description>` (`[Tech]`).
-- Body: render the `pr-story` template via the `github-templates` skill.
+- Body: `pr-story` template via `github-templates` skill.
 
 **Revisit (open PR):** no PR action — new commits appear on the existing PR.
 
 ## Notify
 
-Via the `github` skill, run **Notify Implementation Complete** on `#story_issue_number`:
+Via `github` skill, run **Notify Implementation Complete** on `#story_issue_number`:
 
 - mode = `implementation`.
-- variant = single-PR when exactly one PR exists, else multi-PR (one bullet per codebase).
-- Fresh → posts a new completion comment. Revisit → updates the existing completion comment with the current PR link(s).
+- variant = single-PR when exactly one PR, else multi-PR (one bullet per codebase).
+- Fresh → post a new completion comment. Revisit → update the existing one with current PR link(s).
 - Board: Status → `Implemented`.
 
 ## Next Step
 
-Story implemented. Print the next command:
+Story implemented. Next:
 
-- `/feature:implement <next_story_issue>` — implement the next open story
-- `/feature:pre-release <sprint_number>` — once every story is merged
+- `/feature implement the next story`
+- `/feature pre-release the sprint` — once every story is merged

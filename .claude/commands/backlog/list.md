@@ -13,13 +13,13 @@ tools: Bash
 
 ## Fetch Drafts
 
-Via the `github` skill, run **List Backlog Drafts**. On a missing-board or missing-scope error, surface the skill's message and stop.
+Via `github` skill, run **List Backlog Drafts**. Missing-board or missing-scope error → surface the skill's message → stop.
 
 ## Render
 
-If empty: output `Backlog is empty.` and stop.
+Empty → output `Backlog is empty.` → stop.
 
-Otherwise render grouped by Type (Feature / Refactor / Bug — omit empty groups):
+Else render grouped by Type (Feature / Refactor / Bug — omit empty groups):
 
 ```
 🗂 Backlog
@@ -36,5 +36,5 @@ Bug
 
 ## Next Step
 
-- `/backlog:add <text>` — capture another item
+- `/backlog:add` — capture another item
 - `/backlog:promote` — promote an item into the workflow

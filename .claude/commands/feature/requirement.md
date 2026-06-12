@@ -16,27 +16,25 @@ tools: Read, AskUserQuestion, Bash
 
 Ask via `AskUserQuestion` → `$MODE`:
 
-- **Create** — draft a new requirement issue.
-- **Amend** — apply a delta to an existing requirement issue.
+- **Create** — draft new requirement issue.
+- **Amend** — apply delta to existing requirement issue.
 
 ## Resolve Target
 
-- **Create**: ask via `AskUserQuestion` for `$DESCRIPTION` — free-text requirement description.
-- **Amend**:
-  1. Via the `github` skill, resolve the active sprint → `$SPRINT_N`. Halt if none: `⛔ No sprint on the board — run /feature:requirement:create first.`
-  2. Via the `github` skill, list sprint items; find the item labelled `requirement` → `$ISSUE_NUMBER`. Halt if absent: `⛔ Sprint $SPRINT_N has no requirement issue.`
-  3. Ask via `AskUserQuestion` for `$DELTA` — free-text describing the change to apply to `#$ISSUE_NUMBER`.
+- **Create**: ask via `AskUserQuestion` → `$DESCRIPTION` (free-text requirement description).
+- **Amend**, via `github` skill:
+  1. Resolve active sprint → `$SPRINT_N`. None → halt `⛔ No sprint on the board — run /feature:requirement:create first.`
+  2. List sprint items → item labelled `requirement` → `$ISSUE_NUMBER`. Absent → halt `⛔ Sprint $SPRINT_N has no requirement issue.`
+  3. Ask via `AskUserQuestion` → `$DELTA` (change to apply to `#$ISSUE_NUMBER`).
 
 ## Resume Check
 
-Look up resume state (`workflow = feature`, `run_key = requirement-<$MODE>-<$ISSUE_NUMBER|new>`).
+Look up resume state (`workflow = feature`, `run_key = requirement-<$MODE>-<$ISSUE_NUMBER|new>`). Exists → ask via `AskUserQuestion`:
 
-If state exists, ask via `AskUserQuestion`:
-
-- **Resume** — jump past completed steps; replay stored decisions and artifacts.
-- **Restart** — clear state; start from the first step of the mode file.
-- **Cancel** — abort; leave state untouched.
+- **Resume** → skip completed steps; replay stored decisions + artifacts.
+- **Restart** → clear state; start from mode file's first step.
+- **Cancel** → abort; leave state untouched.
 
 ## Dispatch
 
-Read `feature/requirement/<$MODE>.md` and follow it from its first step. Inputs (`$DESCRIPTION` for Create, `$ISSUE_NUMBER` + `$DELTA` for Amend) are already in scope.
+Read `feature/requirement/<$MODE>.md` → follow from first step. In scope: `$DESCRIPTION` (Create), `$ISSUE_NUMBER` + `$DELTA` (Amend).

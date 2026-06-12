@@ -18,7 +18,7 @@ tools: Read, Write, Glob, Grep, Bash, AskUserQuestion
 
 ## Existence Check
 
-Check for `.claude/skills/project-config/SKILL.md`. If it exists, ask via `AskUserQuestion`:
+Check for `.claude/skills/project-config/SKILL.md`. Exists → ask via `AskUserQuestion`:
 
 - **Skip** — keep untouched. Exit: `project-config skill already exists — no changes made.`
 - **Regenerate** — overwrite.
@@ -27,30 +27,30 @@ Default option: Skip.
 
 ## Gather Codebase Names and Paths
 
-Ask via `AskUserQuestion` for each codebase — ask all in one call with separate questions:
+Ask via `AskUserQuestion` for each codebase — all in one call, separate questions:
 
-1. **API / backend** — name and path (e.g. `api` at `../my-api`).
-2. **Web / frontend** — name and path (e.g. `web` at `../my-web`).
-3. **Infrastructure** — name and path (e.g. `infrastructure` at `../my-api/terraform`). User may skip.
+1. **API / backend** — name + path (e.g. `api` at `../my-api`).
+2. **Web / frontend** — name + path (e.g. `web` at `../my-web`).
+3. **Infrastructure** — name + path (e.g. `infrastructure` at `../my-api/terraform`). User may skip.
 
-Parse name and path for each codebase. Omit any the user skips.
+Parse name + path for each. Omit any the user skips.
 
 ## Detect Tech Stack
 
 Per codebase path, detect the stack:
 
-- `package.json` — Node.js / framework (check `dependencies` and `devDependencies` for Next.js, React, Vue, Express, NestJS, etc.).
+- `package.json` — Node.js / framework (check `dependencies` + `devDependencies` for Next.js, React, Vue, Express, NestJS, etc.).
 - `*.csproj` or `*.sln` — .NET (check `TargetFramework`, check for EF Core packages).
-- `requirements.txt` or `pyproject.toml` or `setup.py` — Python (Django, FastAPI, Flask, etc.).
+- `requirements.txt` / `pyproject.toml` / `setup.py` — Python (Django, FastAPI, Flask, etc.).
 - `pom.xml` — Java/Spring.
 - `go.mod` — Go.
 - `Gemfile` — Ruby/Rails.
 - `Cargo.toml` — Rust.
 - `pubspec.yaml` — Flutter/Dart.
 - `build.gradle` — Kotlin/Java.
-- `*.tf` + `versions.tf` — Terraform (check provider and resource types for AWS/GCP/Azure, note version constraint).
+- `*.tf` + `versions.tf` — Terraform (check provider + resource types for AWS/GCP/Azure, note version constraint).
 
-Resolve the path relative to the repo root. Use `Glob` and `Read` to inspect. Compose a one-line summary per codebase (e.g. `Next.js 14 frontend with TypeScript`, `ASP.NET Core 8 REST API with EF Core`).
+Resolve the path relative to the repo root. Inspect via `Glob` + `Read`. Compose a one-line summary per codebase (e.g. `Next.js 14 frontend with TypeScript`, `ASP.NET Core 8 REST API with EF Core`).
 
 ## Detect Component Inventory
 
@@ -58,15 +58,15 @@ Per frontend-framework codebase (React, Vue, Angular, Svelte, etc.), scan for th
 
 - Look for directories commonly named `src/components/`, `src/ui/`, `components/`, `app/components/`, or equivalent.
 - Check for a UI library (shadcn/ui, Radix, Chakra, Vuetify, etc.) — its output directory is typically the component directory.
-- If multiple candidates exist, pick the one containing the most `.tsx` / `.vue` / `.svelte` component files.
+- Multiple candidates → pick the one with the most `.tsx` / `.vue` / `.svelte` component files.
 
 Hold the directory as `$COMPONENT_DIRS` — one entry per frontend codebase (codebase name → relative component directory path). Omit non-frontend codebases.
 
-Then build `$COMPONENT_TABLE` — for each frontend codebase in `$COMPONENT_DIRS`:
+Then build `$COMPONENT_TABLE` — per frontend codebase in `$COMPONENT_DIRS`:
 
 1. List all component files (`.tsx` / `.vue` / `.svelte`) in the detected directory (top-level only, skip subdirectories).
-2. For each file, scan for `export` statements to collect exported names (components, hooks, variant helpers, interfaces).
-3. Infer a short purpose from the component name, props, and underlying library (e.g. "Checkbox input (Radix)", "Content carousel (Embla)").
+2. Per file, scan `export` statements → exported names (components, hooks, variant helpers, interfaces).
+3. Infer a short purpose from name, props, underlying library (e.g. "Checkbox input (Radix)", "Content carousel (Embla)").
 4. Hold as rows: `| {filename} | {exports} | {purpose} |`.
 
 ## Gather Migration Detection
@@ -115,6 +115,6 @@ Output: `project-config skill written to .claude/skills/project-config/SKILL.md`
 
 ## Next Step
 
-project-config skill written. Print the next command:
+project-config skill written. Next:
 
-- `/setup:labels` — create the GitHub labels
+- `/setup provision the board`

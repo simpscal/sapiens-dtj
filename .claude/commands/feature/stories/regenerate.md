@@ -20,98 +20,104 @@ Navigator supplies `$ISSUE_NUMBER` (the requirement issue), referenced below as 
 
 Ask via `AskUserQuestion` → `$SYNC_SOURCE`:
 
-- **Requirement change** — diff the requirement's current Goals against the linked stories. Use after the requirement issue was amended.
-- **User input** — reconcile against a scope delta the user describes in plain language. Use when the change isn't captured in the requirement Goals.
+- **Requirement change** — diff the requirement's current Goals against linked stories. Use after the requirement was amended.
+- **User input** — reconcile against a scope delta the user describes. Use when the change isn't in the requirement Goals.
 
-Via the `github` skill, read issue `#req_issue_number` in full for context. Produce `$SCOPE_ITEMS` — the discrete units of intended scope to reconcile against — per `$SYNC_SOURCE`:
+Via `github` skill, read `#req_issue_number` in full. Produce `$SCOPE_ITEMS` (discrete units of intended scope) per `$SYNC_SOURCE`:
 
 ### Requirement change
 
-Extract the requirement's **Goals**. `$SCOPE_ITEMS` = each Goal.
+`$SCOPE_ITEMS` = each requirement **Goal**.
 
 ### User input
 
-Ask via `AskUserQuestion`, hold as `$SCOPE_DELTA`: `What scope changed for the stories under #req_issue_number (<title>), and why?` If too thin, ask one follow-up. Via the `user-stories` skill, decompose `$SCOPE_DELTA` into discrete, user-observable changes → `$SCOPE_ITEMS`. The requirement is context only.
+Ask via `AskUserQuestion` → `$SCOPE_DELTA`: `What scope changed for the stories under #req_issue_number (<title>), and why?` Too thin → one follow-up. Via `user-stories` skill, decompose `$SCOPE_DELTA` → discrete user-observable changes → `$SCOPE_ITEMS`. Requirement is context only.
 
 ## Fetch Linked Stories
 
-Via the `github` skill, determine the sprint from `req_issue_number`'s board Sprint value.
+Via `github` skill, determine the sprint from `req_issue_number`'s board Sprint.
 
-- No board Sprint → halt: `⛔ Issue #<N> has no board Sprint. Stories cannot be regenerated until the sprint is assigned on the board.`
+- No board Sprint → halt `⛔ Issue #<N> has no board Sprint. Stories cannot be regenerated until the sprint is assigned on the board.`
 
-Via the `github` skill, list sprint items labelled `user-story` whose title starts with `[Story]`. Filter to **Linked stories** — body references `#req_issue_number`. Read each in full.
+Via `github` skill, list sprint items labelled `user-story` with title `[Story]` → filter to **Linked stories** (body references `#req_issue_number`) → read each in full.
 
-Preconditions:
-
-- Linked stories empty → halt: `⛔ No user stories linked to #<req_issue_number> in the sprint. Run /feature:stories:create first.`
+- Linked stories empty → halt `⛔ No user stories linked to #<req_issue_number> in the sprint. Run /feature:stories:create first.`
 
 ## Classify Scope Changes
 
-Via the `user-stories` skill, compare `$SCOPE_ITEMS` against the linked stories.
-
-For each scope item and each linked story:
+Via `user-stories` skill, compare `$SCOPE_ITEMS` against linked stories. Per scope item × linked story:
 
 | Classification | Condition | Planned Action |
 |---|---|---|
-| **Covered** | Linked story fully covers the scope item | No change |
-| **Updatable** | Linked story partially covers a scope item not reflected in the current ACs | Amend ACs — cite the scope item as the delta |
-| **New** | No existing story covers the scope item | Write a new story |
-| **Removed** | Linked story covers a scope item explicitly dropped | Close or revert |
-| **Orphaned** | Linked story doesn't match any current Goal | Close or revert |
+| **Covered** | Story fully covers the scope item | No change |
+| **Updatable** | Story partially covers a scope item not in current ACs | Amend ACs — cite the scope item as delta |
+| **New** | No story covers the scope item | Write a new story |
+| **Removed** | Story covers a scope item explicitly dropped | Close or revert |
+| **Orphaned** | Story matches no current Goal | Close or revert |
 
-**Orphaned** applies only when `$SYNC_SOURCE` is **Requirement change** — a full Goals diff can detect stories matching no Goal. A **User input** delta is targeted: never orphan a story the user didn't name.
+**Orphaned** applies only when `$SYNC_SOURCE` = **Requirement change** (a full Goals diff detects stories matching no Goal). **User input** is targeted: never orphan a story the user didn't name.
 
-Output a **Change Plan Table** listing every scope item and affected story with its classification. Clarify any ambiguity with the PO before proceeding.
+Output a **Change Plan Table** — every scope item + affected story + classification. Ambiguity → clarify with PO before proceeding.
 
 ## Draft + Approve Loop
 
-Compute `$DRAFT = .claude/state/feature-stories-regen-<req_issue_number>.md`.
+`$DRAFT = .claude/state/feature-stories-regen-<req_issue_number>.md` → write the full Change Plan Table + per-section detail:
 
-Write `$DRAFT` rendering the full Change Plan Table plus per-section detail:
+- **Stories to update** — each with a 1-line AC delta summary.
+- **Stories to create** — each new title + scope it covers.
+- **Stories to remove** — each to close or revert (incl. orphaned).
 
-- **Stories to update** — each story with a one-line AC delta summary.
-- **Stories to create** — each new story title and the scope it covers.
-- **Stories to remove** — each story to close or revert (including orphaned).
+`AskUserQuestion`:
 
-Ask via `AskUserQuestion`:
+> Draft `<$DRAFT>` — `<N_update>` updates · `<N_create>` new · `<N_remove>` removals:
+> - **Approve** → execute changes from the draft
+> - **Adjust** → describe change → re-classify → rewrite draft
+> - **Cancel** → abort; draft stays on disk
 
-> Draft at `<$DRAFT>` — `<N_update>` updates · `<N_create>` new · `<N_remove>` removals. Choose:
->
-> - **Approve** — execute changes from the draft.
-> - **Adjust** — describe what to change; re-classify and rewrite the draft.
-> - **Cancel** — abort; leave the draft on disk.
-
-- **Adjust** — ask via `AskUserQuestion` for `$ADJUSTMENT`, fold into the classification context, re-run Classify Scope Changes, overwrite `$DRAFT`, re-prompt..
-- **Cancel** — halt.
-- **Approve** — proceed to **Execute Changes**.
+- **Adjust** → `$ADJUSTMENT` → fold into classification context → re-run **Classify Scope Changes** → overwrite `$DRAFT` → re-prompt
+- **Cancel** → halt
+- **Approve** → **Execute Changes**
 
 ## Execute Changes
 
 ### 5a — Prune Stale Dependencies
 
-Scan every open story involved in this sync. Remove any `Depends on:` or `Blocks:` reference pointing to a closed issue.
+Per open story in this sync → remove any `Depends on:` / `Blocks:` reference pointing to a closed issue.
 
 ### 5b — Amend Updatable Stories
 
-Via the `user-stories` skill, for each updatable story reshape its ACs per the scope item driving the amendment. Classify each baseline AC as Kept / Removed / Modified; new entries are Added. Run the testability linter on Added and Modified ACs. Reconstruct the body preserving all sections except `## Acceptance Criteria` (and conditionally `## Notes`). Via the `github` skill, update the story body and set board Status back to `Todo`.
+Via `user-stories` skill, per updatable story:
+
+- Reshape ACs per the driving scope item.
+- Classify each baseline AC: Kept / Removed / Modified; new = Added.
+- Run testability linter on Added + Modified.
+- Rebuild body, preserving all sections except `## Acceptance Criteria` (and conditionally `## Notes`).
+
+Via `github` skill → update story body → board Status `Todo`.
 
 ### 5c — Write New Stories
 
-Via the `user-stories` skill, for each new scope item decompose into user stories using the requirement `#req_issue_number` body as context. Apply INVEST, phrase ACs as user-observable behaviour, run the testability linter. Via the `github` skill, for each spec create an issue with the `issue-user-story` template, label `user-story`, body referencing `#req_issue_number`, then register it on the board via **Register Issue on Board** — Type `Feature`, Status `Todo`, Sprint set. After all issues exist, back-fill dependency references for both `Depends on` and `Blocks` directions.
+Via `user-stories` skill, per new scope item → decompose into stories (context: `#req_issue_number` body):
+
+- INVEST
+- ACs as user-observable behaviour
+- run testability linter
+
+Via `github` skill, per spec → create issue (`issue-user-story` template, label `user-story`, body refs `#req_issue_number`) → **Register Issue on Board** (Type `Feature`, Status `Todo`, Sprint set). After all issues exist → back-fill `Depends on` + `Blocks` references.
 
 ### 5d — Remove Obsolete Stories
 
-Via the `github` skill, for each **Removed** or **Orphaned** story scan its comments for an implementation-complete notification:
+Via `github` skill, per **Removed** / **Orphaned** story → scan comments for an implementation-complete notification:
 
-- **Has implementation-complete comment (merged PRs)** → create a `[Revert] <original-title>` issue with label `user-story`, registered on the board via **Register Issue on Board** under the same Sprint — Type `Feature`, Status `Todo`. Body includes `Reverts: #<original>`. ACs describe the rollback (revert merged commits across affected codebases, tests pass, pre-merge behaviour restored). Close the original story and set its board Status to `Done`.
-- **No implementation-complete comment** → close the story directly and set its board Status to `Done`.
+- **Has implementation-complete comment (merged PRs)** → create `[Revert] <original-title>` issue, label `user-story`, **Register Issue on Board** under the same Sprint (Type `Feature`, Status `Todo`). Body: `Reverts: #<original>`; ACs describe the rollback (revert merged commits across affected codebases, tests pass, pre-merge behaviour restored). Close original → board Status `Done`.
+- **No implementation-complete comment** → close the story → board Status `Done`.
 
 Delete `$DRAFT` via `Bash: rm`.
 
 ## Next Step
 
-Sprint stories reconciled. Print the next command:
+Sprint stories reconciled. Next:
 
-- `/feature:design:regenerate <sprint_number>` — if surfaces changed
-- `/feature:technical-design:regenerate <sprint_number>` — reconcile the TDD
-- `/feature:implement <story_issue>` — implement changed stories
+- `/feature regenerate the surfaces` — if surfaces changed
+- `/feature regenerate the technical design`
+- `/feature implement the changed stories`

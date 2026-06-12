@@ -6,9 +6,9 @@ tools: Agent, Read
 
 # Dispatch Agents
 
-Flow: Pre-flight → Spawn → Collect. When `delta` is present, `<constraints>` carries it and agents implement only the delta rows (see Delta Rendering).
+Flow: Pre-flight → Spawn → Collect. `delta` present → `<constraints>` carries it; agents implement only the delta rows (see Delta Rendering).
 
-Never read from external systems mid-run — everything an agent needs is passed inline in its `<context>`.
+Never read from external systems mid-run — everything an agent needs passed inline in its `<context>`.
 
 ## Inputs
 
@@ -24,7 +24,7 @@ Never read from external systems mid-run — everything an agent needs is passed
 
 ## Pre-flight
 
-Validate before spawning. **Blocker** → return immediately with `status: precheck_failed` and the reason; do not spawn. **Warning** → continue, include in `$AGENT_RESULTS.warnings`.
+Validate before spawning. **Blocker** → return immediately with `status: precheck_failed` + reason; don't spawn. **Warning** → continue, include in `$AGENT_RESULTS.warnings`.
 
 | Check | On failure |
 |-------|-----------|
@@ -45,7 +45,7 @@ Every agent receives exactly one `<decisions>` block, sourced in strict order:
 
 ## Context Protocol
 
-Build one `<context>` XML block per agent. Same shape for every domain; omit sections that don't apply (no empty `<design_context/>` or `<constraints/>` tags). `<acceptance_criteria>` is the verbatim checklist from `issue.body`, never paraphrased.
+Build one `<context>` XML block per agent. Same shape every domain; omit inapplicable sections (no empty `<design_context/>` or `<constraints/>` tags). `<acceptance_criteria>` = verbatim checklist from `issue.body`, never paraphrased.
 
 ```xml
 <context>
@@ -104,7 +104,7 @@ Each agent returns exactly one of:
 | `<no_work>` with `<reason>` | No work needed | Record `status: no_work` with the reason |
 | `<blocked>` with `<reason>` | Cannot proceed | Record `status: blocked` with the reason; do not post anywhere |
 
-If one agent blocks, let the others finish — collect and return all results. If every agent returns `<no_work>`, add warning `"all agents reported no work — verify dispatch was appropriate"`.
+One agent blocks → let others finish, collect and return all results. Every agent returns `<no_work>` → add warning `"all agents reported no work — verify dispatch was appropriate"`.
 
 ## Returns
 

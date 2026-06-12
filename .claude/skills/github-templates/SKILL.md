@@ -6,14 +6,14 @@ tools: Read, Glob
 
 # GitHub Templates
 
-`render_template(name, fields)` is a convention, not a runtime function — shorthand for "look up the named template's reference file, fill in the fields per its spec, use the resulting markdown." The lookup-and-fill happens inside the agent.
+`render_template(name, fields)` = convention, not a runtime function: look up the named template's reference file, fill fields per its spec, use the resulting markdown. Lookup-and-fill happens inside the agent.
 
 ## Workflow
 
-1. Resolve the name against the Template Index. Unknown → stop: "Unknown template `<name>`. Known templates: <list>." No fuzzy-matching.
-2. Read the reference file (path in the index) — authoritative for structure and field spec.
+1. Resolve name against Template Index. Unknown → stop: "Unknown template `<name>`. Known templates: <list>." No fuzzy-matching.
+2. Read reference file (path in index) — authoritative for structure + field spec.
 3. Validate fields per Field Conventions. Missing required → stop and list them. Extra fields → drop silently.
-4. Render by filling fields per the reference. Return the markdown string; do not write to disk.
+4. Fill fields per the reference → return the markdown string; never write to disk.
 
 ## Field Conventions
 
@@ -60,7 +60,7 @@ Rules:
 
 ### Removed Templates
 
-When a template is removed, add a row here with the replacement so old names get a clear migration path.
+Template removed → add a row here with the replacement so old names get a clear migration path.
 
 | Removed name | Replacement | Notes |
 |--------------|-------------|-------|
@@ -110,7 +110,7 @@ Closes {closes}
 Field markers in the template body:
 
 - `{field}` — required; render verbatim.
-- `{field?}` — optional; if absent, the line is omitted entirely (including surrounding whitespace).
+- `{field?}` — optional; absent → line omitted entirely (including surrounding whitespace).
 - `{field}` for a list field — rendered as a bullet list.
 
 ## Constraints

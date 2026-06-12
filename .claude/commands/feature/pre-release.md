@@ -19,73 +19,58 @@ tools: Read, Write, Glob, Grep, Bash, AskUserQuestion
 
 ## Infer Active Sprint
 
-Via the `github` skill, resolve the active sprint → `$SPRINT_N`. Halt if none: `⛔ No sprint on the board to check.`
+Via `github` skill, resolve active sprint → `$SPRINT_N`. None → halt `⛔ No sprint on the board to check.`
 
 ## Resume Check
 
-Look up resume state (`workflow = feature`, `run_key = pre-release-<$SPRINT_N>`).
+Look up resume state (`workflow = feature`, `run_key = pre-release-<$SPRINT_N>`). Exists → ask via `AskUserQuestion`:
 
-If state exists, ask via `AskUserQuestion`:
-
-- **Resume** — jump past completed steps; replay stored decisions and artifacts.
-- **Restart** — clear state; start from **Infer Active Sprint**.
-- **Cancel** — abort; leave state untouched.
+- **Resume** → skip completed steps; replay stored decisions + artifacts.
+- **Restart** → clear state; start from **Infer Active Sprint**.
+- **Cancel** → abort; leave state untouched.
 
 ## Fetch Sprint Snapshot
 
-Via the `github` skill, list **open** sprint items only. For each, note number, title, labels, status, state.
+Via `github` skill, list **open** sprint items only → per item note number, title, labels, status, state. Partition:
 
-Partition into four groups:
+- **Stories**: label `user-story` (`[Story]` + `[Tech]`).
+- **TDD**: title contains `Technical Design Document`.
+- **Design**: label `design`.
+- **Requirement**: label `requirement`.
 
-- **Stories**: issues with `user-story` label (both `[Story]` and `[Tech]`).
-- **TDD**: issue whose title contains `Technical Design Document`.
-- **Design**: issue with `design` label.
-- **Requirement**: issue with `requirement` label.
-
-Guard: a feature sprint must carry a Requirement. If `$REQUIREMENT` is absent, halt: `⛔ Sprint $SPRINT_N has no requirement issue — this command targets feature sprints.`
+Guard: a feature sprint must carry a Requirement. `$REQUIREMENT` absent → halt `⛔ Sprint $SPRINT_N has no requirement issue — this command targets feature sprints.`
 
 Derive sprint branch name for sprint N.
 
 ## Readiness Gate
 
-For each story still **open** (`[Story]` or `[Tech]`):
+**Implementable items** = stories (`[Story]`, `[Tech]`) + in-sprint bugs (`[Dev Bug]`) + in-sprint refactors (`[Dev Refactor]`) — every open sprint item carrying work that merges into the sprint branch.
 
-- Check its board Status for `In Progress`.
-- For each codebase repo (derive slug: owner from tracker config + directory name from codebase path), list open pull requests for story branches of issue N in each codebase repo to detect any unmerged PRs.
+Per implementable item still **open**:
 
-If any open story has an unmerged PR or is still In Progress, stop and output:
+- Check board Status for `In Progress`.
+- Per codebase repo (slug: owner from tracker config + directory name from codebase path) → list open PRs for the item's branches of issue N → detect unmerged PRs.
+
+Any open item with an unmerged PR or still In Progress → stop:
 
 ```
-⛔ Sprint not ready to close. The following stories have unmerged work:
+⛔ Sprint not ready to close. The following items have unmerged work:
   - #N <title> (status: <status>)
 
-Merge all story PRs into the sprint branch, then run /feature:pre-release again.
+Merge all item PRs into the sprint branch with /feature:merge <N>, then run /feature:pre-release again.
 ```
 
-If all stories are merged or already closed, check for open dev bugs.
-
-**Dev Bug Gate:**
-
-From the sprint items, filter to open issues with label `bug` whose title starts with `[Dev Bug]`. If any found, halt:
-
-```
-⛔ Sprint not ready to close. Open development bug(s) in Sprint $SPRINT_N:
-  - #N <title>
-
-Close all dev bugs with /bugfix:release <bug#> first, then run /feature:pre-release again.
-```
-
-If no open dev bugs, proceed.
+Every implementable item merged or closed → proceed.
 
 ## Build & Test Gate
 
-For each codebase repo, check out `{sprint_branch}`:
+Per codebase repo → check out `{sprint_branch}`:
 
-- Discover the build and test commands from the codebase root (CLAUDE.md, solution file, Makefile, or `package.json`).
+- Discover build + test commands from codebase root (CLAUDE.md, solution file, Makefile, or `package.json`).
 - Run the full build.
 - Run the full test suite.
 
-If any codebase fails to build or has failing tests, halt:
+Any codebase fails build or has failing tests → halt:
 
 ```
 ⛔ Sprint not ready to close. Build/test failures:
@@ -95,24 +80,24 @@ If any codebase fails to build or has failing tests, halt:
 Fix in the owning codebase, merge into {sprint_branch}, then run /feature:pre-release again.
 ```
 
-Proceed only when every codebase builds clean and all tests pass.
+Proceed only when every codebase builds clean + all tests pass.
 
 ## Check for Migrations (Backend Only)
 
-Get the list of files changed between `main` and `{sprint_branch}` in the backend repo. Apply the migration detection rule from the `project-config` skill. Capture the filtered list (if any) for **Create Release PRs (Sprint Branch → Main)**.
+List files changed between `main` and `{sprint_branch}` in the backend repo → apply the migration detection rule from `project-config` skill → capture the filtered list (if any) for **Create Release PRs (Sprint Branch → Main)**.
 
-If no migration files are found, note: "No database migrations in this sprint."
+No migration files → note "No database migrations in this sprint."
 
 ## Create Release PRs (Sprint Branch → Main)
 
-Via the `git` skill, for each codebase create a sprint release PR for sprint N with title `feat(sprint-N): {one-line sprint goal from the requirement}`, base `main`, body rendered from the `pr-release` template via the `github-templates` skill.
+Via `git` skill, per codebase → create a sprint release PR for sprint N: title `feat(sprint-N): {one-line sprint goal from the requirement}`, base `main`, body from `pr-release` template (via `github-templates` skill).
 
 ## Post Sprint Summary
 
-Render the `comment-sprint-summary` template via the `github-templates` skill with `{sprint, closed_date, stories, release_prs, migrations}`. Via the `github` skill, post as a comment on the requirement issue.
+Render `comment-sprint-summary` template (via `github-templates` skill) with `{sprint, closed_date, stories, release_prs, migrations}` → post as a comment on the requirement issue via `github` skill.
 
 ## Next Step
 
-Sprint readiness gate passed; release PRs open. Print the next command:
+Sprint readiness gate passed; release PRs open. Next:
 
-- `/feature:release <sprint_number>` — merge release PRs and close the sprint
+- `/feature release the sprint`

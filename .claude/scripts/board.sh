@@ -8,7 +8,7 @@ set -euo pipefail
 # Usage: board.sh <subcommand> [args]
 #
 # Subcommands:
-#   current-sprint                              → highest "Sprint N" option name
+#   current-sprint                              → highest "Sprint N" with active (non-Done) work
 #   next-sprint-number                          → max(N)+1
 #   ensure-sprint <K>                           → append "Sprint K" option if missing
 #   add-issue <issue-number>                    → add issue to board, print item ID
@@ -33,7 +33,7 @@ resolve_board_live() {
   PROJECT_NUMBER=$(gh project list --owner "$OWNER" --format json \
     --jq ".projects[] | select(.title==\"$PROJECT_TITLE\") | .number" | head -n1)
   if [ -z "$PROJECT_NUMBER" ]; then
-    echo "ERROR: No board titled '$PROJECT_TITLE' found — run /setup:board first." >&2
+    echo "ERROR: No board titled '$PROJECT_TITLE' found — provision the project board first." >&2
     exit 1
   fi
   # repositoryOwner covers both user- and org-owned projects.
@@ -137,11 +137,22 @@ set_field_on_issue() {
 }
 
 current_sprint() {
+  # Highest-numbered sprint that still has live work — at least one issue not
+  # yet Done. A fully-released sprint (all issues Done) is no longer active, so
+  # its option name is skipped even if it sorts highest.
   local sprint
-  sprint=$(echo "$FIELDS_JSON" | jq -r '.fields.nodes[] | select(.name=="Sprint") | .options[].name' \
-    | grep -E '^Sprint [0-9]+$' | sort -t' ' -k2 -n | tail -n1)
+  sprint=$(list_items | jq -r '
+    [ .[]
+      | select(.kind=="Issue")
+      | select(.status != "Done")
+      | .sprint
+      | select(. != null)
+      | select(test("^Sprint [0-9]+$")) ]
+    | unique
+    | sort_by(ltrimstr("Sprint ") | tonumber)
+    | last // empty')
   if [ -z "$sprint" ]; then
-    echo "ERROR: No sprint on the board. Run /feature:requirement:create first." >&2
+    echo "ERROR: No active sprint on the board." >&2
     exit 1
   fi
   echo "$sprint"

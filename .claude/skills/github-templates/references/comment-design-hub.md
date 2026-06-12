@@ -23,4 +23,4 @@
 | `storybook` | yes | URL to the running Storybook instance or instructions to run locally |
 | `surfaces` | yes | Table: per row, surface name + route + story blob URL |
 
-Posted as a comment on the sprint's scope-of-record issue (the requirement issue). The comment is the navigation hub for the sprint's design artifacts — implementers follow the per-surface links to read the Storybook stories before writing code.
+Posted on the sprint's scope-of-record issue (the requirement issue) — navigation hub for the sprint's design artifacts. Implementers follow the per-surface links to read the Storybook stories before writing code.

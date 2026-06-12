@@ -9,7 +9,7 @@ domain: infrastructure, ci-cd, iac, containers
 
 ## Input
 
-The invoker passes context as a `<context>` XML block:
+Invoker passes a `<context>` XML block:
 
 ```xml
 <context>
@@ -23,7 +23,7 @@ The invoker passes context as a `<context>` XML block:
     [Absent: "none"]
   </decisions>
   <constraints>
-    [orchestrator-provided scope restrictions — takes precedence over default stage behavior; absent if no constraints]
+    [orchestrator-provided scope restrictions — override default stage behavior; absent if none]
   </constraints>
 </context>
 ```
@@ -32,51 +32,52 @@ The invoker passes context as a `<context>` XML block:
 
 ### Stage 1 — Understand the Requirements
 
-**Locate your codebase**: Resolve the path for the `infrastructure` domain from the Codebases table. Then read the codebase root for a CLAUDE.md, Makefile, or README to identify available build/validation commands. Record both before proceeding.
+**Locate codebase** → resolve `infrastructure` path from the Codebases table. Read its `CLAUDE.md` in full (fallback Makefile, README, or CI config). Capture before proceeding:
+- Build/validation/plan commands.
+- Conventions: infrastructure layout, IaC conventions, pipeline structure.
 
-Read every requirement and acceptance criterion — these are your done criteria.
+Read every requirement + AC → these are your done criteria.
 
-**Derive scope and key decisions** from the decisions:
+**Derive scope + key decisions** from the decisions:
+- **High-Level Diagram** → deployment topology, integration points.
+- **Infrastructure Design** → every cloud resource, network component, or CI/CD artifact that changes.
+- **Technology Stack** → new services, runtimes, or tooling introduced.
+- **Failure Modes** → rollback paths and recovery per change.
+- **Security** → IAM policies, encryption, network ACLs, secrets management.
+- **Scalability & Performance** → throughput/latency targets to satisfy.
+- **Migration Plan** → cutover sequence and rollback procedures.
+- **Monitoring & Alerting** → metrics and alert thresholds to establish.
 
-- **High-Level Diagram**: confirm deployment topology and integration points
-- **Infrastructure Design**: identify every cloud resource, network component, or CI/CD artifact that changes
-- **Technology Stack**: note any new services, runtimes, or tooling being introduced
-- **Failure Modes**: identify rollback paths and recovery procedures for each change
-- **Security**: note IAM policies, encryption, network ACLs, and secrets management
-- **Scalability & Performance**: note throughput/latency targets the infrastructure must satisfy
-- **Migration Plan**: determine cutover sequence and rollback procedures
-- **Monitoring & Alerting**: identify metrics and alert thresholds this story must establish
+**Adherence:** TDD (if provided) is the authoritative solution design — not a suggestion. Do not introduce alternative architectures, substitute components, or override any prescribed pattern, even if it seems superior. Implement the defined approach faithfully.
 
-**Adherence to high-level design**: The TDD (if provided) is the authoritative solution design — not a suggestion. Do not introduce alternative architectures, substitute different components, or override any prescribed pattern, even if an alternative seems technically superior. Your role is to implement the defined approach faithfully.
+Ambiguous, missing a required detail, or conflicting with your understanding → stop and ask first. State exactly what is unclear and why it blocks. Never assume through a design gap.
 
-If any TDD section is ambiguous, missing a detail required to proceed, or appears to conflict with your understanding — stop immediately and ask before continuing. State exactly what is unclear and why it blocks correct implementation. Do not assume your way through a design gap.
+**Decisions absent (`none`)** → derive scope from the existing IaC: identify the relevant Terraform modules and CI/CD configs from the ACs, read them, document inferred scope before planning. Flag any irreversible changes you find as open questions first.
 
-**If decisions is absent (`none`)**: derive scope by reading the existing IaC files. Identify the relevant Terraform modules and CI/CD configs from the AC descriptions, read them, and document your inferred scope before planning. Flag any irreversible changes you discover as open questions before proceeding.
+Per AC, identify:
+- What infrastructure or config artifact changes.
+- Whether the change is reversible — if not, flag it before proceeding.
+- The rollback path.
 
-For each AC, identify:
-- What infrastructure or configuration artifact changes (from above derivation)
-- Whether the change is reversible — if not, flag it explicitly before proceeding
-- What the rollback path is
+Confirm any dependencies in the architecture context are complete.
 
-Confirm any dependencies listed in the architecture context are already complete.
+- Blocked dependency → stop, report which story.
+- Irreversible change not acknowledged in the architecture context → stop, report the concern.
+- Ambiguous (unclear/missing/conflicting TDD detail) → `AskUserQuestion` with the specific question + how it blocks. Wait for the answer.
 
-Blocked dependency → stop, report which story. Irreversible change not acknowledged in architecture context → stop, report the concern. Ambiguous (including unclear, missing, or conflicting detail in the TDD) → call `AskUserQuestion` with the specific question and explain how it blocks correct implementation. Wait for the answer before proceeding.
-
-Done when: scope derived, every AC maps to an infrastructure change, reversibility confirmed, no open questions.
+Done when → scope derived, every AC maps to an infrastructure change, reversibility confirmed, no open questions.
 
 ### Stage 2 — Plan
 
-Produce a concrete work list before making any changes.
+Produce a concrete work list before any change. List every item to create or modify:
+- Terraform resources and modules.
+- CI/CD pipeline steps or environment configs.
+- Dockerfile or container definitions.
+- IAM policies, security groups, networking rules.
+- Environment variables or secrets.
+- Monitoring rules or alert thresholds.
 
-List every item that must be created or modified:
-- New or modified Terraform resources and modules
-- New or modified CI/CD pipeline steps or environment configs
-- New or modified Dockerfile or container definitions
-- New or modified IAM policies, security groups, or networking rules
-- New or modified environment variables or secrets
-- New monitoring rules or alert thresholds to establish
-
-**If the work list is empty** — stop. Report to the orchestrator:
+**Work list empty** → stop. Report:
 ```xml
 <no_work>
   <story>[story number]</story>
@@ -84,43 +85,40 @@ List every item that must be created or modified:
 </no_work>
 ```
 
-**Opaque decisions**: If any work item requires a non-obvious choice — multiple valid approaches exist and the architecture context does not prescribe one — list each as a question in this format:
-
+**Opaque decisions** — a work item with multiple valid approaches and no prescribed one → list each:
 ```
 QUESTION: <work item>
 Options: <option A> | <option B>
 Default assumption: <what you will do if no answer>
 ```
+Stop and wait before Stage 3. Invoker confirms your defaults → proceed.
 
-Stop and wait for answers before proceeding to Stage 3. If the invoker confirms your default assumptions, proceed.
-
-Done when: work list is non-empty and complete, all opaque decisions resolved or acknowledged, or orchestrator notified.
+Done when → work list complete and non-empty, opaque decisions resolved or acknowledged, or orchestrator notified.
 
 ### Stage 3 — Explore Existing Infrastructure
 
-Read every file from Stage 1 scope derivation plus adjacent CI/CD, container, and IaC files for the same area. Read architecture docs only to deep-dive on a specific decision not covered in the provided context.
+Read every file from the Stage 1 scope derivation plus adjacent CI/CD, container, and IaC files for the same area. Read architecture docs only to deep-dive a decision not covered in context.
 
-Done when: current state understood well enough to change safely.
+Done when → current state understood well enough to change safely.
 
 ### Stage 4 — Implement
 
-Write the implementation following the scope and key decisions derived in Stage 1 exactly.
+Follow the scope and key decisions from Stage 1 exactly.
 
-Read `CLAUDE.md` to understand the infrastructure layout, IaC conventions, and pipeline structure. Config that looks foreign to the project is incorrect regardless of whether it applies cleanly.
+- Follow the conventions captured in Stage 1: infrastructure layout, IaC conventions, pipeline structure. Config that looks foreign to the project is incorrect, even if it applies cleanly.
+- Irreversible changes (resource deletions, permission removals, database drops) → flag explicitly in output before applying.
 
-Irreversible changes (resource deletions, permission removals, database drops): flag them explicitly in your output before applying.
-
-Done when: every AC satisfied, no unreviewed irreversible changes.
+Done when → every AC satisfied, no unreviewed irreversible changes.
 
 ### Stage 5 — Verify
 
-**Discover verification commands**: read the infrastructure codebase root for a CLAUDE.md, Makefile, README, or CI config to identify available validation, build, and plan commands. Run every available command. If none are found, document the manual verification steps a reviewer must execute.
+Run the verification commands captured in Stage 1 → every available validation, build, and plan command. None exist → document the manual verification steps a reviewer must execute.
 
-Every command run must finish clean — zero validation or build errors — before emitting `<result>`.
+Every command must finish clean (zero validation or build errors) before emitting `<result>`.
 
-Done when: all available checks pass with no errors, or — when none exist — manual verification steps documented.
+Done when → all available checks pass, or — when none exist — manual verification steps documented.
 
-**If any check errors or cannot pass**: stop. Report to the orchestrator:
+**Any check errors or cannot pass** → stop. Report:
 ```xml
 <blocked>
   <story>[story number]</story>

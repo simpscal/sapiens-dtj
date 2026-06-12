@@ -10,7 +10,7 @@
 - <next pain point>
 
 ### Motivation
-<what this unlocks or improves once complete>
+<what this unlocks or improves>
 
 ### Scope
 - <file / module / layer>
@@ -34,10 +34,14 @@
 **Verification & Cleanup** (cross-cutting, run after all codebase groups finish):
 1. <step>
 
+### Trade-offs
+- **Wins**: <what the chosen approach buys>
+- **Costs**: <what the team will live with — boilerplate, indirection, runtime, maintenance/drift>
+
 ### Migration Plan
-- **Data migration**: <schema / data / state that must migrate, or none>
-- **Cutover**: <forward migration delivered as a script run manually against the target database at release; documented in the PR body, not auto-applied on deploy>
-- **Rollback**: <reverse script that undoes the change, run manually>
+- **Data migration**: <schema / data / state to migrate, or none>
+- **Cutover**: <forward script>
+- **Rollback**: <reverse script>
 
 ### Affected Codebases
 - <backend | frontend | infrastructure>
@@ -54,10 +58,11 @@
 
 | Field | Req | Notes |
 |-------|-----|-------|
-| `problem_statement` | yes | Bullet list — direct, one pain point per bullet, specific and technical (no prose paragraphs) |
-| `motivation` | yes | 1–2 sentences — what improves or becomes possible |
+| `problem_statement` | yes | Bullet list — one pain point per bullet |
+| `motivation` | yes | what improves or becomes possible |
 | `scope` | yes | Bullet list of specific files, modules, or layers |
-| `technical_approach` | yes | Group steps under fixed subheadings — Pre-flight, Infrastructure, Backend, Frontend, Verification & Cleanup — in that order. Skip groups whose codebase is not affected. Number steps within each group (`1.` resets per group). |
-| `migration` | yes | Three bullets — **Data migration**, **Cutover**, **Rollback** — or the single bullet `N/A — no data migration required`. Migrations are delivered as scripts run manually against the target database (forward + rollback), documented in the PR body rather than auto-applied on deploy. |
+| `technical_approach` | yes | Steps under the fixed subheadings shown, in that order; skip unaffected groups; numbering resets per group |
+| `trade_offs` | yes | Bullets — **Wins**, **Costs** |
+| `migration` | yes | Three bullets — **Data migration**, **Cutover**, **Rollback** — or the single bullet `N/A — no data migration required` |
 | `affected_codebases` | yes | `backend` \| `frontend` \| `infrastructure` — one per line |
 | `definition_of_done` | yes | Always include "All existing tests pass" and "No user-visible behavior change"; add specifics |

@@ -22,7 +22,13 @@ A role not in scope → mark its sections `N/A — out of scope`, do not omit.
 
 ## Per-role Probe Briefs
 
-Read `CLAUDE.md` (and any role-scoped equivalent) before probing. Probe until you can answer the Discovery categories for in-scope roles — located the closest existing analogue for each new component, identified the convention to follow or diverge from, named where each new piece lives. Anything still unresolved becomes a Discovery blocker; do not probe indefinitely.
+Read `CLAUDE.md` (+ any role-scoped equivalent) before probing. Probe until you can answer the Discovery categories for in-scope roles:
+
+- Located closest existing analogue for each new component.
+- Identified convention to follow or diverge from.
+- Named where each new piece lives.
+
+Unresolved item -> Discovery blocker. Don't probe indefinitely.
 
 | Role | What to explore |
 |------|-----------------|
@@ -32,11 +38,13 @@ Read `CLAUDE.md` (and any role-scoped equivalent) before probing. Probe until yo
 
 ## Design context
 
-When the caller supplies design context (Storybook surface stories), use it to ground frontend component and scope decisions. Labeled **placeholder** blocks within those stories represent existing system areas the sprint does not change — they are design-phase artifacts from the `ui-design` agent, not new scope. Ignore them: do not derive components, data models, API surface, or `[Tech]` stories from placeholder regions. Design only for the changed/new areas.
+Caller-supplied design context (Storybook surface stories) grounds frontend component + scope decisions.
+
+**placeholder** blocks within stories = existing areas the sprint doesn't change (artifacts from `ui-design` agent, not new scope). Ignore them -> derive no components, data models, API surface, or `[Tech]` stories from placeholder regions. Design only the changed/new areas.
 
 ## Discovery Categories
 
-Answer from codebase context first; only unresolvable items become blockers. When surfacing a blocker, state what you already inferred so the answer is targeted.
+Answer from codebase context first; only unresolvable items become blockers. When surfacing a blocker, state what you inferred -> targeted answer.
 
 | Category | Decisions |
 |----------|-----------|
@@ -63,7 +71,7 @@ Cover every area in this order. Write `N/A — <reason>` where inapplicable. Use
 | 4 | `event_schemas` | Topic, structure, producer, consumer — or `N/A` |
 | 5 | `happy_path` | sequence diagram. Participants must be high-level system modules only: actors (e.g. Customer, Admin) and major system boundaries (e.g. Web, API, Database, External Service). Omit all implementation details — internal libraries, state managers, hooks, query clients, and sub-components must not appear as participants. |
 | 6 | `unhappy_path` | Key failure scenario and system response |
-| 7 | `components_design` | **Backend** + **Frontend** sub-sections. High-level actors only (e.g. endpoint, validator, handler, specification, repository; page, UI sub-component, API client, model layer) — one-phrase responsibility each, tagged `[NEW]`/`[MODIFIED]`/existing; interconnections shown via ASCII box-and-arrow diagram. No code-level details: no method signatures, class members, validation rules, query keys, hooks wiring, or prop/state specifics. Design decisions (contracts, ordering guarantees, where a responsibility lives) go in prose next to the diagram. |
+| 7 | `components_design` | **Backend** + **Frontend** sub-sections. High-level actors only (e.g. endpoint, validator, handler, specification, repository; page, UI sub-component, API client, model layer) — one-phrase responsibility each, tagged `[NEW]`/`[MODIFIED]`/existing; interconnections shown via ASCII box-and-arrow diagram. No code-level details: no method signatures, class members, validation rules, query keys, hooks wiring, or prop/state specifics. Design decisions (contracts, ordering guarantees, where a responsibility lives) go as terse notes next to the diagram. |
 | 8 | `infrastructure_design` | Cloud resources added/modified; IaC changes. `None` if unchanged. |
 | 9 | `tech_stack` | New languages/frameworks/libraries/infra only |
 | 10 | `security` | Auth, authz, encryption at rest and in transit |
@@ -73,19 +81,18 @@ Cover every area in this order. Write `N/A — <reason>` where inapplicable. Use
 | 14 | `monitoring` | Key metrics, alert thresholds |
 | 15 | `technical_stories` | Table: Title, Scope, Required by, Key ACs |
 
-Order rationale: data model and contracts before flows; flows before component layout; cross-cutting concerns (security, scalability, failure) after the system is defined; ops (migration, monitoring) last; tech stories synthesise everything above.
-
 ## Technical Story Decomposition
 
-Emit one `[Tech]` story per discrete piece of foundational work that satisfies **all** of:
+Emit one `[Tech]` story per discrete piece of foundational work satisfying **all**:
 
-- Enables one or more user stories but is not user-observable on its own.
-- Has a clear developer-verifiable completion condition (build passes, migration runs, primitive matches contract, endpoint returns documented shape).
-- Cannot split further into independently-shippable items.
+- Enables user stories but not user-observable on its own.
+- Developer-verifiable completion condition (build passes, migration runs, primitive matches contract, endpoint returns documented shape).
+- Can't split further into independently-shippable items.
 
-Qualifies: a shared component/design primitive, a schema migration, an IaC module, auth middleware, a new event topic + producer scaffold, a shared API client. Does **not** qualify (fold into the owning user story): a single endpoint for one story, a single page's local state, copy changes, one-off validation rules.
+Qualifies: shared component/design primitive, schema migration, IaC module, auth middleware, new event topic + producer scaffold, shared API client.
+Doesn't qualify (fold into owning user story): single endpoint for one story, single page's local state, copy changes, one-off validation rules.
 
-`[Tech]` story ACs are developer-verifiable only — never user-observable. Use `required_by_titles` to link the user stories that depend on the work.
+`[Tech]` ACs developer-verifiable only — never user-observable. Link dependent user stories via `required_by_titles`.
 
 ## Scope Classification (revisions only)
 
@@ -114,11 +121,12 @@ When revising, compare the revised TDD against each user story (ignore `[Tech]` 
 
 ## Output Rules
 
-- Lead with the key architectural decision and its rationale in one short paragraph before the sections.
-- Follow the Canonical Sections order — do not reorder.
-- Make risks and trade-offs explicit; if you rejected an alternative, say why in one line.
-- Use tables for contracts, schemas, and failure modes; ASCII art for diagrams.
-- Keep Components Design at actor level — high-level actors and their interconnections only; implementation specifics (signatures, members, query keys, state wiring) never appear anywhere in the TDD.
+- Follow Canonical Sections order — never reorder.
+- Make risks + trade-offs explicit. Rejected an alternative under the current design -> say why in one line. Never narrate a prior version's approach as a rejected alternative.
+- Revised TDD = clean snapshot of the current target design, never a diff against a prior version. Every section in present tense. No change-narration ("previously/now/changed from", "no longer references", "New in this revision", changelog prose), no superseded/prior-version decisions carried forward. Old-code removal = `[Tech]` story scope, not a design section. Distinct from the codebase-relative `[NEW]`/`[MODIFIED]`/existing actor tags in Components Design — those stay.
+- Tables for contracts, schemas, failure modes; ASCII art for diagrams.
+- Terse + direct — fewest words per idea, no filler or restated context. Bullets/numbered lists over long paragraphs.
+- Components Design at actor level only — high-level actors + interconnections. Implementation specifics (signatures, members, query keys, state wiring) never appear anywhere in the TDD.
 - Ground every decision in codebase context — cite file paths, existing components, conventions. Justify any divergence.
 
 ## Constraints

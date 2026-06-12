@@ -49,7 +49,10 @@ Read `.claude/state/<workflow>.json` (absent → `null`), validate `_version`, r
 
 Inputs: `workflow`, `run_key`, `stage`, `primary_arg`, `phase`, `step`, optional `decisions`, optional `artifacts`.
 
-Initialise the run-key entry if absent (`stage`, `primary_arg`, `started`, empty `completed_steps`/`phases`). Deep-merge `decisions` and `artifacts` into `phases[phase]` (arrays append + dedupe). Set `current_phase`, `current_step` (the **next** step), `updated`; append the previously-current step to `completed_steps` if not already there. Write back with 2-space indent.
+- Initialise the run-key entry if absent (`stage`, `primary_arg`, `started`, empty `completed_steps`/`phases`).
+- Deep-merge `decisions` + `artifacts` into `phases[phase]` (arrays append + dedupe).
+- Set `current_phase`, `current_step` (the **next** step), `updated`; append the previously-current step to `completed_steps` if not already there.
+- Write back with 2-space indent.
 
 ## Clear
 
@@ -85,8 +88,8 @@ Resume? [Y]es / [r]estart / [c]ancel
 
 ## Step Boundary
 
-After each step, `checkpoint:write` with `step` = the next step's label (or `"done"` after the final step), plus decisions and artifacts produced in the step just completed.
+After each step, `checkpoint:write` with `step` = next step's label (or `"done"` after the final step), plus decisions + artifacts produced in the step just completed.
 
 ## On Completion
 
-Write final state with `current_step = "done"`, `current_phase = "done"`. If the stage terminates the workflow (e.g. `feature:release`, `bugfix:release`), `checkpoint:clear` **all** run-keys for the same sprint/issue; otherwise leave the checkpoint in place.
+Write final state with `current_step = "done"`, `current_phase = "done"`. Stage terminates the workflow (a release stage) → `checkpoint:clear` **all** run-keys for the same sprint/issue. Otherwise leave the checkpoint in place.

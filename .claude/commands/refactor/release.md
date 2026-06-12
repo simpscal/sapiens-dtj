@@ -1,6 +1,6 @@
 ---
 name: refactor:release
-description: Close a refactor task — merge refactor PRs, mark Done on the board, close the issue.
+description: Close a standalone refactor — merge refactor PRs into main, mark Done on the board, close the issue.
 tools: Read, Write, Glob, Grep, Bash, AskUserQuestion
 ---
 
@@ -18,36 +18,28 @@ tools: Read, Write, Glob, Grep, Bash, AskUserQuestion
 
 ## Resume Check
 
-Look up resume state (`workflow = refactor`, `run_key = release-<refactor_issue>`).
+Look up resume state (`workflow = refactor`, `run_key = release-<refactor_issue>`). Exists → ask via `AskUserQuestion`:
 
-If state exists, ask via `AskUserQuestion`:
-
-- **Resume** — jump past completed steps; replay stored decisions and artifacts.
-- **Restart** — clear state; start from **Parse Arguments**.
-- **Cancel** — abort; leave state untouched.
+- **Resume** → skip completed steps; replay stored decisions + artifacts.
+- **Restart** → clear state; start from **Parse Arguments**.
+- **Cancel** → abort; leave state untouched.
 
 ## Parse Arguments
 
 Parse `$ARGUMENTS` as the refactor issue number (e.g. `42`).
 
-If `$ARGUMENTS` is empty: list all open issues labeled `refactoring`, show the results for the user to choose from, then stop.
+Empty → list all open `refactoring` issues → show for the user to choose → stop.
 
 ## Fetch Issue
 
-Via the `github` skill, read issue `#issue_number` — title, labels, state.
+Via `github` skill, read issue `#issue_number` — title, labels, state.
 
-- If missing `refactoring` label, stop:
-  ```
-  ⛔ Issue #N is not a refactoring task (labels: <labels>). Use /refactor:release only for refactoring issues.
-  ```
-- If already closed, stop:
-  ```
-  ℹ Issue #N is already closed.
-  ```
+- Missing `refactoring` label → stop `⛔ Issue #N is not a refactoring task (labels: <labels>). Use /refactor:release only for refactoring issues.`
+- Already closed → stop `ℹ Issue #N is already closed.`
 
 ## Merge Refactor PRs
 
-Via the `git` skill, for each codebase repo find open refactor PRs for issue N and squash-merge each (**Merge PR** operation). Output:
+Via `git` skill, per codebase repo → find open refactor PRs for issue N → squash-merge each (**Merge PR**). Output:
 
 ```
 ✓ Merged <pr_title> in {codebase_name}
@@ -55,9 +47,9 @@ Via the `git` skill, for each codebase repo find open refactor PRs for issue N a
 
 ## Mark Done and Close
 
-Via the `github` skill:
+Via `github` skill:
 
-1. Set board Status to `Done`.
+1. Set board Status `Done`.
 2. Close issue `#issue_number`.
 
 Output:
@@ -68,6 +60,6 @@ Output:
 
 ## Next Step
 
-Refactor closed — refactor lifecycle complete. Print:
+Refactor closed — refactor lifecycle complete. Next:
 
-- `/help-flows` — pick another workflow
+- start another workflow with `/feature`, `/bugfix`, or `/refactor`

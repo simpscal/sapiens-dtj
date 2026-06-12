@@ -18,68 +18,72 @@ Navigator supplies `$SPRINT_N`.
 
 ## Load Sprint Context
 
-Via the `github` skill, load Sprint Snapshot for Sprint $SPRINT_N. Hold `$STORIES`, `$REQUIREMENT`, `$TDD`, `$DESIGN`.
+Via `github` skill, load Sprint Snapshot for Sprint $SPRINT_N → `$STORIES`, `$REQUIREMENT`, `$TDD`, `$DESIGN`.
 
 Exclude `[Revert]`-prefixed issues from `$STORIES`.
 
-If `$DESIGN` is present, read the Storybook story files its Surfaces table links (full surface set) → design context for the TDD author.
+`$DESIGN` present → read the Storybook story files its Surfaces table links (full surface set) → design context for the TDD author.
 
-Guard: if `$TDD` is present, halt: `⛔ A TDD already exists for Sprint $SPRINT_N — run /feature:technical-design:regenerate to revise it.`
+`$TDD` present → halt `⛔ A TDD already exists for Sprint $SPRINT_N — run /feature:technical-design:regenerate to revise it.`
 
-Resolve every codebase the project exposes into `$AVAILABLE_CODEBASES` (each entry: name, role ∈ `{backend, frontend, infrastructure}`, path).
+Resolve every codebase → `$AVAILABLE_CODEBASES` (each: name, role ∈ `{backend, frontend, infrastructure}`, path).
 
 ## Author TDD
 
-Initialise `$FEEDBACK` empty on first entry. Via the `technical-design` skill, spawn a subagent to author the TDD. Pass the sprint goal (derived from `$REQUIREMENT`), all `$STORIES` (id, title, user_story, acceptance_criteria, notes), the requirement body, design context (if present), and `$AVAILABLE_CODEBASES`. On iteration passes, include `$FEEDBACK`.
+Init `$FEEDBACK` empty. Via `technical-design` skill, spawn a subagent to author the TDD. Pass:
 
-The subagent resolves in-scope codebases, probes each in parallel, resolves blocking questions, designs all canonical sections, and decomposes technical stories.
+- sprint goal (from `$REQUIREMENT`)
+- all `$STORIES` (id, title, user_story, acceptance_criteria, notes)
+- requirement body
+- design context (if present)
+- `$AVAILABLE_CODEBASES`
+- `$FEEDBACK` (iteration passes only)
 
-Hold as `$TDD_BODY` + `$TECHNICAL_STORIES`. Treat as draft — not yet final.
+Subagent: resolves in-scope codebases → probes each in parallel → resolves blocking questions → designs all canonical sections → decomposes technical stories.
+
+Hold `$TDD_BODY` + `$TECHNICAL_STORIES`.
 
 ## Draft + Approve Loop
 
-Compute `$DRAFT = .claude/state/feature-technical-design-sprint-<$SPRINT_N>.md`.
+`$DRAFT = .claude/state/feature-technical-design-sprint-<$SPRINT_N>.md` → write `$TDD_BODY`, then append `## Technical Stories` rendering every spec in `$TECHNICAL_STORIES`.
 
-Write `$DRAFT` (overwrite on iteration) with `$TDD_BODY`, then append a `## Technical Stories` section rendering every spec in `$TECHNICAL_STORIES`.
+`AskUserQuestion`:
 
-Ask via `AskUserQuestion`:
+> Draft `<$DRAFT>` — TDD for Sprint $SPRINT_N + technical stories:
+> - **Approve** → write the TDD issue
+> - **Adjust** → describe change → re-run **Author TDD** → rewrite draft
+> - **Cancel** → abort; draft stays on disk
 
-> Draft at `<$DRAFT>` — TDD for Sprint $SPRINT_N + technical stories. Choose:
->
-> - **Approve** — write the TDD issue.
-> - **Adjust** — describe what to change; re-run **Author TDD** with the appended feedback; rewrite the draft.
-> - **Cancel** — abort; leave the draft on disk.
-
-- **Adjust** — ask via `AskUserQuestion` for `$ADJUSTMENT`, append to `$FEEDBACK`, re-run **Author TDD**, overwrite `$DRAFT`, re-prompt.
-- **Cancel** — halt.
-- **Approve** — proceed to **Write TDD Issue**.
+- **Adjust** → `$ADJUSTMENT` → append to `$FEEDBACK` → re-run **Author TDD** → overwrite `$DRAFT` → re-prompt
+- **Cancel** → halt
+- **Approve** → **Write TDD Issue**
 
 ## Write TDD Issue
 
-Via the `github` skill, create an issue:
+Via `github` skill, create issue:
 
 - Title: `Sprint $SPRINT_N — Technical Design Document`.
-- Body: `$TDD_BODY` rendered from the `issue-technical-design` template via the `github-templates` skill, with `Part of #$REQUIREMENT.issue_number` at the very top.
+- Body: `$TDD_BODY` from `issue-technical-design` template (via `github-templates` skill), with `Part of #$REQUIREMENT.issue_number` at the very top.
 - Labels: none (identified by title).
-- Hold the issue number as `$TDD_ISSUE_NUMBER`.
-- Via the `github` skill, run **Register Issue on Board** — Type `Feature`, Status `Todo`, Sprint `Sprint $SPRINT_N`.
+- Hold issue number → `$TDD_ISSUE_NUMBER`.
+- **Register Issue on Board** — Type `Feature`, Status `Todo`, Sprint `Sprint $SPRINT_N`.
 
 ## Persist Technical Stories
 
-Via the `github` skill, for each spec in `$TECHNICAL_STORIES`:
+Via `github` skill, per spec in `$TECHNICAL_STORIES`:
 
-1. Create an issue titled `spec.title` (begins with `[Tech]`), label `user-story`, body rendered from the `issue-technical-story` template via the `github-templates` skill with `{scope_summary, acceptance_criteria, notes, tdd_issue: $TDD_ISSUE_NUMBER}`, then register it on the board via **Register Issue on Board** — Type `Feature`, Status `Todo`, Sprint `Sprint $SPRINT_N`.
+1. Create issue `spec.title` (begins `[Tech]`), label `user-story`, body from `issue-technical-story` template (via `github-templates` skill) with `{scope_summary, acceptance_criteria, notes, tdd_issue: $TDD_ISSUE_NUMBER}` → **Register Issue on Board** (Type `Feature`, Status `Todo`, Sprint `Sprint $SPRINT_N`).
 
-After all `[Tech]` issues exist, back-fill cross-references:
+After all `[Tech]` issues exist → back-fill cross-references:
 
-- Resolve `spec.required_by_titles` → `[Story]` `#id`s in the sprint; write `Required by:` into each `[Tech]` body.
-- Resolve `spec.notes.depends_on_titles` → `[Tech]` `#id`s; write `Depends on:` and `Blocks:` into each `[Tech]` body.
-- For each `[Story]` referenced by any `[Tech]`, append `Depends on: #<tech-issue>` to its Notes.
+- `spec.required_by_titles` → `[Story]` `#id`s in the sprint → write `Required by:` into each `[Tech]` body.
+- `spec.notes.depends_on_titles` → `[Tech]` `#id`s → write `Depends on:` + `Blocks:` into each `[Tech]` body.
+- Per `[Story]` referenced by any `[Tech]` → append `Depends on: #<tech-issue>` to its Notes.
 
-Delete `$DRAFT` via `Bash: rm`. The GitHub issues are the source of truth.
+Delete `$DRAFT` via `Bash: rm`. GitHub issues are the source of truth.
 
 ## Next Step
 
-TDD filed. Print the next command:
+TDD filed. Next:
 
-- `/feature:implement <story_issue>` — implement each story (repeat per story)
+- `/feature implement each story`

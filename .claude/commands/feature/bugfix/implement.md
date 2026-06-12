@@ -1,10 +1,10 @@
 ---
-name: bugfix:implement
-description: Implement one production bug fix. Detects Fresh / Revisit by scanning for an Implementation Complete comment, manages branches, dispatches agents, commits, opens PRs, and posts notification.
+name: feature:bugfix:implement
+description: Implement one in-sprint bug fix on the sprint branch. Detects Fresh / Revisit by scanning for an Implementation Complete comment, manages branches, loads sprint artifacts, dispatches agents, commits, opens PRs, and posts notification.
 tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 ---
 
-# Bugfix Implement
+# Feature Bugfix — Implement
 
 Implement **one bug fix per invocation** — do not batch.
 
@@ -14,16 +14,17 @@ Implement **one bug fix per invocation** — do not batch.
 1. Resume Check
 2. Fetch Bug Issue
 3. Branch Prep
-4. Classify Change Origin (Revisit only)
-5. Dispatch Agents
-6. Commit and Push
-7. Open PR
-8. Notify
-9. Next Step
+4. Load Artifacts
+5. Classify Change Origin (Revisit only)
+6. Dispatch Agents
+7. Commit and Push
+8. Open PR
+9. Notify
+10. Next Step
 
 ## Resume Check
 
-Look up resume state (`workflow = bugfix`, `run_key = implement-<bug_issue_number>`). Exists → ask via `AskUserQuestion`:
+Look up resume state (`workflow = feature`, `run_key = bugfix-implement-<bug_issue_number>`). Exists → ask via `AskUserQuestion`:
 
 - **Resume** → skip completed steps; replay stored decisions + artifacts.
 - **Restart** → clear state; start from **Fetch Bug Issue**.
@@ -34,6 +35,8 @@ Look up resume state (`workflow = bugfix`, `run_key = implement-<bug_issue_numbe
 Via `github` skill, fetch issue `#bug_issue_number` in full (title, body, labels, comments).
 
 - Missing `bug` label → halt `⛔ Issue #<N> is not a bug (labels: <labels>). Use /feature:implement for stories.`
+
+Resolve `$SPRINT_N` from board Sprint (`Sprint N`). No board Sprint → halt `⛔ Dev bug #<N> has no board Sprint. Assign it to the active sprint on the board first, or use /bugfix for a production bug.`
 
 Set board Status `In Progress` → assign current user (**Assign Issue**).
 
@@ -46,8 +49,15 @@ Detect mode — scan comments for an implementation-complete notification:
 
 Resolve every codebase → `$CODEBASES`.
 
-- **Fresh:** via `git` skill, per codebase → create a bugfix branch for issue `<N>` from `main`.
+- **Fresh:** via `git` skill, per codebase → create a bugfix branch for issue `<N>` from the sprint branch.
 - **Revisit:** via `git` skill, per `$OPEN_PRS` entry → check out the existing PR branch.
+
+## Load Artifacts
+
+Via `github` skill, **Load Sprint Snapshot** for `$SPRINT_N` → `$TDD`, `$DESIGN`.
+
+- `$TDD` present → read body in full → `$TDD_ISSUE`.
+- Hold `$DESIGN` (the design hub comment) for surface matching at **Dispatch Agents**.
 
 ## Classify Change Origin
 
@@ -58,6 +68,8 @@ Revisit only. Ask via `AskUserQuestion` → `$CHANGE_ORIGIN`:
 
 ## Dispatch Agents
 
+`$DESIGN` present → read the Storybook story files linked from its **Surfaces** table → `$DESIGN_CONTEXT`. Else leave unset.
+
 Via `dispatch-agents` skill, always dispatch all three domains (`frontend`, `backend`, `devops`) with:
 
 | Parameter | Value |
@@ -65,6 +77,8 @@ Via `dispatch-agents` skill, always dispatch all three domains (`frontend`, `bac
 | `issue` | `{number, title, body}` of `#bug_issue_number` — agents derive root cause + scope themselves |
 | `codebases` | `$CODEBASES` |
 | `agents` | `frontend`, `backend`, `devops` |
+| `tdd_issue` | `$TDD_ISSUE` (if loaded) |
+| `design_context` | `$DESIGN_CONTEXT` (if loaded) |
 | `delta` | Revisit only: `{satisfied, to_add, to_remove, to_rewrite, affected_files}`. `$CHANGE_ORIGIN = upstream` → compare open PR branch state against current ACs. `$CHANGE_ORIGIN = phase` → derive from `$PHASE_INTENT` |
 
 Receive `$AGENT_RESULTS`.
@@ -81,7 +95,7 @@ Via `git` skill, per codebase with `files_changed` in `$AGENT_RESULTS` → commi
 
 **Fresh:** via `git` skill, per codebase that produced work → open a PR:
 
-- Base: `main`.
+- Base: sprint branch.
 - Title: `fix(#<N>): <short description>`.
 - Body: `pr-bug` template via `github-templates` skill.
 
@@ -98,6 +112,6 @@ Via `github` skill, run **Notify Implementation Complete** on `#bug_issue_number
 
 ## Next Step
 
-Bug fix implemented. Next:
+Dev bug fix implemented on the sprint branch. Next:
 
-- `/bugfix run the readiness gate`
+- `/feature merge the fix into the sprint`

@@ -6,7 +6,7 @@ tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 # Refactor Spec — Amend
 
-`$ISSUE_NUMBER` is supplied by the navigator.
+`$ISSUE_NUMBER` supplied by the navigator.
 
 ## Workflow
 1. Fetch Refactor Issue
@@ -20,11 +20,7 @@ tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 ## Fetch Refactor Issue
 
-Via the `github` skill, read issue `#$ISSUE_NUMBER` in full — title, body, labels.
-
-Guard: must have `refactoring` label. If absent → stop:
-
-> ⛔ Issue #N is not a refactoring task (label `refactoring` missing).
+Via `github` skill, read issue `#$ISSUE_NUMBER` in full (title, body, labels). Missing `refactoring` label → halt `⛔ Issue #N is not a refactoring task (label refactoring missing).`
 
 Hold as **$REFACTOR**. Extract from body:
 
@@ -32,87 +28,89 @@ Hold as **$REFACTOR**. Extract from body:
 - **Motivation**
 - **Scope** (bullet list)
 - **Technical Approach** (numbered steps)
+- **Trade-offs** (wins / costs)
 - **Affected Codebases**
 - **Definition of Done** (checklist)
 
 ## Reconstruct the Mental Model
 
-Work through all loaded material silently — no output in this step. From $REFACTOR, establish:
+Work through all loaded material silently — no output this step. From $REFACTOR, establish:
 
-- The pain point driving the refactor.
-- Files, modules, or layers in scope.
-- The sequence of steps in the current Technical Approach.
-- What "done" looks like — which DoD items are objective vs subjective.
-- What was explicitly excluded or constrained.
+- the pain point driving the refactor
+- files, modules, or layers in scope
+- the sequence of steps in the current Technical Approach
+- what "done" looks like — which DoD items are objective vs subjective
+- what was explicitly excluded or constrained
 
-Complete when: you can state the refactor goal, name every file or module in scope, summarise every step of the approach, and flag what would break if scope shifts — without re-reading.
-
-When complete, activate using this format:
+Complete when you can state the goal, name every file/module in scope, summarise every approach step, and flag what breaks if scope shifts — without re-reading. Then output:
 
 > Technical Lead active — refactor #$ISSUE_NUMBER. Full knowledgebase loaded: [list what was loaded]. Ready to discuss changes or alternatives.
 
 ## Open Amendment Dialog
 
-Ask via `AskUserQuestion`. Hold as **$CHANGE_INPUT**: `What changed, and why? Describe the problem with the current refactor spec and the direction you want to go — or share options you'd like to evaluate.`
+Ask via `AskUserQuestion` → **$CHANGE_INPUT**: `What changed, and why? Describe the problem with the current refactor spec and the direction you want — or share options to evaluate.`
 
-Use `$CHANGE_INPUT` to discuss — answer trade-off questions, surface constraints from the mental model, flag risks from loaded material — until the direction is confirmed.
+Use `$CHANGE_INPUT` to discuss — answer trade-off questions, surface constraints + risks from the mental model — until the direction is confirmed.
 
 ## Re-explore (if scope expands)
 
-If the confirmed change adds a codebase not previously listed in **Affected Codebases**, or expands scope into modules not yet mapped:
+Confirmed change adds a codebase not in **Affected Codebases**, or expands into unmapped modules → spawn one `Explore` subagent per newly-in-scope area **in parallel**. Per-role brief:
 
-Spawn one `Explore` subagent per newly-in-scope area **in parallel**. Per-role brief:
+- **Backend**: files, classes, services, patterns to change; coupling points, duplication, structural issues. Return: file paths, class/method names, current pattern, what changes and why.
+- **Frontend**: components, hooks, utilities, state management affected; shared code, duplication, abstraction gaps. Return: file paths, component names, current pattern, what changes and why.
+- **Infrastructure**: IaC resources, modules, config affected. **Query live state** per newly-in-scope resource via the relevant cloud/platform API (running/stopped, attached/detached, exists/missing, rule present/absent) — don't assume what tooling can confirm. Return: file paths, resource names, current pattern, what changes and why; plus live state findings.
 
-**Backend**: files, classes, services, patterns to change; coupling points, duplication, structural issues. Return: file paths, class/method names, current pattern, what changes and why.
-
-**Frontend**: components, hooks, utilities, state management affected; shared code, duplication, abstraction gaps. Return: file paths, component names, current pattern, what changes and why.
-
-**Infrastructure**: IaC resources, modules, config affected. **Query live state**: for every infrastructure resource newly in scope, call the relevant cloud/platform API to verify actual current state (running/stopped, attached/detached, exists/missing, rule present/absent) — do not assume or ask the user about things that can be confirmed directly via available tooling. Return: file paths, resource names, current pattern, what changes and why; plus live state findings.
-
-Skip if the change stays within the existing Scope.
+Change stays within existing Scope → skip.
 
 ## Revise Spec
 
-Use the current refactor spec as baseline. Output the **full revised spec**, not a diff.
+Baseline = current spec. Output the **full revised spec**, not a diff.
 
-For each section, decide whether the confirmed change affects it — keep unchanged sections exactly, rewrite only affected parts.
+Per section → decide whether the confirmed change affects it → keep unchanged sections exactly, rewrite only affected parts.
+
+Revised body reads as if authored fresh:
+
+- present tense
+- replace superseded Problem / Approach / Trade-off content in place
+- drop obsolete steps, costs, or decisions rather than annotating them
+- no change-narration (no "previously/now", "no longer", "changed from")
+
+Change Summary lives only in the draft for review — never in the issue body.
 
 | Field | When to revise |
 |-------|----------------|
 | Problem Statement | Pain point reframed or sharpened |
-| Motivation | What the refactor unlocks has shifted |
+| Motivation | What the refactor unlocks shifted |
 | Scope | Files/modules added or removed |
 | Technical Approach | Steps reordered, replaced, or added |
-| Migration Plan | Data migration, cutover, or rollback script added, changed, or no longer needed (set to `N/A — no data migration required` when obsolete) |
+| Trade-offs | Approach changed, or a new cost surfaced |
+| Migration Plan | Data migration, cutover, or rollback added/changed/obsolete (set `N/A — no data migration required` when obsolete) |
 | Affected Codebases | Codebase added or dropped |
-| Definition of Done | New objective criterion or one no longer applies |
+| Definition of Done | New objective criterion, or one no longer applies |
 
 ## Draft + Approve Loop
 
-Compute `$DRAFT = .claude/state/refactor-spec-amend-<$ISSUE_NUMBER>.md`.
+`$DRAFT = .claude/state/refactor-spec-amend-<$ISSUE_NUMBER>.md` → write a **Change Summary** header + the full revised issue body.
 
-Write `$DRAFT` with a **Change Summary** header followed by the full revised issue body:
+`AskUserQuestion`:
 
-Ask via `AskUserQuestion`:
+> Draft `<$DRAFT>` — revised refactor spec:
+> - **Approve** → update the GitHub issue
+> - **Adjust** → describe change → re-run **Revise Spec** → rewrite draft
+> - **Cancel** → abort; draft stays on disk
 
-> Draft at `<$DRAFT>` — revised refactor spec. Choose:
->
-> - **Approve** — update the GitHub issue.
-> - **Adjust** — describe what to change; re-run **Revise Spec** with appended feedback; rewrite the draft.
-> - **Cancel** — abort; leave the draft on disk.
-
-- **Adjust** — ask via `AskUserQuestion` for `$ADJUSTMENT`. Append to `$CHANGE_INPUT`. Re-run **Revise Spec**. Overwrite `$DRAFT`. Re-prompt.
-- **Cancel** — halt.
-- **Approve** — proceed to **Update Issue**.
+- **Adjust** → `$ADJUSTMENT` → append to `$CHANGE_INPUT` → re-run **Revise Spec** → overwrite `$DRAFT` → re-prompt
+- **Cancel** → halt
+- **Approve** → **Update Issue**
 
 ## Update Issue
 
-1. Via the `github` skill, update the body of issue `#$ISSUE_NUMBER` with the revised spec (rendered from the `issue-refactoring` template via the `github-templates` skill).
+1. Via `github` skill, update body of `#$ISSUE_NUMBER` with the revised spec (`issue-refactoring` template via `github-templates` skill).
 2. Delete `$DRAFT` via `Bash: rm`.
 3. Report: `Refactor #<N> amended. Scope: <delta>. Approach: <delta>. DoD: <delta>.`
 
 ## Next Step
 
-Refactor spec revised. Print the next command:
+Refactor spec revised. Next:
 
-- `/refactor:implement <refactor_issue>` — implement the revised spec
+- `/refactor implement the revised spec`

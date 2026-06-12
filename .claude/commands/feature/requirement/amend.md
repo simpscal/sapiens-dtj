@@ -17,48 +17,43 @@ Navigator supplies `$ISSUE_NUMBER` and `$DELTA`.
 
 ## Load Product Context
 
-Read `PRODUCT.md` from the repo root. Extract **Vision** and **Business Goals** and hold them.
+Read `PRODUCT.md` (repo root). Hold **Vision** + **Business Goals**.
 
 ## Resolve Body
 
-Read issue `#$ISSUE_NUMBER` in full. Apply `$DELTA` to produce the revised body.
+Read issue `#$ISSUE_NUMBER` → apply `$DELTA` → revised body.
 
-Via the `github-templates` skill, render the body from the `issue-requirement` template with `{summary, goals, out_of_scope}`.
+Via `github-templates` skill, render from `issue-requirement` template with `{summary, goals, out_of_scope}`.
 
-Append an **Alignment Check** block after the rendered summary:
+Append after the rendered summary:
 
 > **Alignment Check**
 > - Vision match: [yes / partial / no — one sentence]
 > - Business goal match: [which goal(s) it serves — or "none identified"]
 
-If both checks are "no", surface a warning.
+Both "no" → surface a warning.
 
 ## Draft + Approve Loop
 
-Compute `$DRAFT = .claude/state/feature-requirement-amend-<$ISSUE_NUMBER>.md`.
+`$DRAFT = .claude/state/feature-requirement-amend-<$ISSUE_NUMBER>.md` → write rendered body → `AskUserQuestion`:
 
-Write `$DRAFT` with the rendered body from **Resolve Body**.
+> Draft `<$DRAFT>`:
+> - **Approve** → update issue
+> - **Adjust** → describe change → re-render draft
+> - **Cancel** → abort; draft stays on disk
 
-Ask via `AskUserQuestion`:
-
-> Draft at `<$DRAFT>`. Choose:
->
-> - **Approve** — update the issue.
-> - **Adjust** — describe what to change; re-render and rewrite the draft.
-> - **Cancel** — abort; leave the draft on disk.
-
-- **Adjust** — ask via `AskUserQuestion` for `$ADJUSTMENT`, fold into `$DELTA`, re-run **Resolve Body**, overwrite `$DRAFT`, re-prompt.
-- **Cancel** — halt.
-- **Approve** — proceed to **Update Issue**.
+- **Adjust** → `$ADJUSTMENT` → fold into `$DELTA` → re-run **Resolve Body** → overwrite `$DRAFT` → re-prompt
+- **Cancel** → halt
+- **Approve** → **Update Issue**
 
 ## Update Issue
 
-Via the `github` skill, update the body of issue `#$ISSUE_NUMBER`. Add label `requirement-updated`. Output: `Issue #N updated — <one-line summary of what changed>`.
+Via `github` skill, update body of `#$ISSUE_NUMBER`. Add label `requirement-updated`. Output: `Issue #N updated — <one-line summary of what changed>`.
 
 Delete `$DRAFT` via `Bash: rm`.
 
 ## Next Step
 
-Requirement updated. Print the next command:
+Requirement updated. Next:
 
-- `/feature:stories:regenerate <requirement_issue>` — reconcile stories with the delta
+- `/feature reconcile the stories with the delta`
