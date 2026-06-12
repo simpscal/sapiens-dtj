@@ -6,9 +6,11 @@ tools: Bash
 
 # Git and PR Operations
 
-**Prerequisites:** `gh` CLI installed and authenticated. On `gh: command not found` or auth errors, stop and surface — no workarounds.
+**Prerequisites:** `gh` CLI installed + authenticated. `gh: command not found` or auth error → stop and surface, no workarounds.
 
-Resolve the repo per Repo Derivation; different codebases resolve independently. Run the Confirmation Protocol before mutating ops. Multi-codebase ops run per codebase, then aggregate into one report.
+- Resolve repo per Repo Derivation — codebases resolve independently.
+- Run Confirmation Protocol before mutating ops.
+- Multi-codebase ops → per codebase → aggregate into one report.
 
 ## Operation Index
 
@@ -61,11 +63,12 @@ Before any mutating op: summarise all planned mutations in one block, ask once `
 | Sprint | `feature/sprint-{N}` | `main` |
 | Story | `feature/issue-{N}-{short-description}` | `feature/sprint-{N}` |
 | Bug (production) | `fix/issue-{N}-{short-description}` | `main` |
-| Bug (development) | `fix/issue-{N}-{short-description}` | `feature/sprint-{N}` |
+| Bug (in-sprint) | `fix/issue-{N}-{short-description}` | `feature/sprint-{N}` |
 | Revert | `revert/issue-{N}-{short-description}` | `main` |
-| Refactor | `refactor/issue-{N}-{short-description}` | `main` |
+| Refactor (standalone) | `refactor/issue-{N}-{short-description}` | `main` |
+| Refactor (in-sprint) | `refactor/issue-{N}-{short-description}` | `feature/sprint-{N}` |
 
-**Production vs. development bug** (when unspecified): board Sprint value set → development, branch from the sprint branch. No board Sprint → production, branch from `main`. Ambiguous → ask.
+Base fixed by caller, never inferred — caller names which Branch Naming row applies. Standalone bug/refactor → base off `main`; in-sprint bug/refactor → base off sprint branch.
 
 **`short-description` derivation:**
 
@@ -86,7 +89,7 @@ git checkout -b {new_branch}
 git push -u origin {new_branch}
 ```
 
-Story branches: confirm the sprint branch exists first via Check Branch Exists; if not, stop and surface — never auto-create it. Run the collision check before creating.
+Story branches: confirm the sprint branch exists via Check Branch Exists first; absent → stop and surface, never auto-create. Run the collision check before creating.
 
 ### Checkout
 
@@ -109,7 +112,7 @@ git commit -m "{message}"
 git push origin {branch_name}
 ```
 
-`{message}` is caller-provided. If asked to author it, stop and surface: "Commit message authoring is out of scope — provide a message or use a commit-message skill."
+`{message}` is caller-provided. Asked to author it → stop and surface: "Commit message authoring is out of scope — provide a message or use a commit-message skill."
 
 ### Delete Branch
 
@@ -158,7 +161,7 @@ git push origin --delete {branch}
 
 ## Multi-codebase Operations
 
-Resolve owner/repo per codebase, build the full mutation plan across all, run the Confirmation Protocol once with the combined list, execute per codebase sequentially (parallel pushes can race), then aggregate per-codebase success/skip/error into one summary.
+Resolve owner/repo per codebase → build full mutation plan across all → run Confirmation Protocol once with combined list → execute per codebase sequentially (parallel pushes can race) → aggregate per-codebase success/skip/error into one summary.
 
 ## Constraints
 

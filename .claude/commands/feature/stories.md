@@ -21,22 +21,22 @@ Ask via `AskUserQuestion` → `$MODE`:
 
 ## Resolve Target
 
-Via the `github` skill, resolve the active sprint → `$SPRINT_N`. Halt if none: `⛔ No sprint on the board — run /feature:requirement:create first.` List sprint items; find the item labelled `requirement` → `$ISSUE_NUMBER`. Halt if absent: `⛔ Sprint $SPRINT_N has no requirement issue.`
+Via `github` skill:
+1. Resolve active sprint → `$SPRINT_N`. None → halt `⛔ No sprint on the board — run /feature:requirement:create first.`
+2. List sprint items → item labelled `requirement` → `$ISSUE_NUMBER`. Absent → halt `⛔ Sprint $SPRINT_N has no requirement issue.`
 
 ## Resume Check
 
-Look up resume state (`workflow = feature`, `run_key = stories-<$MODE>-<$ISSUE_NUMBER>`).
+Look up resume state (`workflow = feature`, `run_key = stories-<$MODE>-<$ISSUE_NUMBER>`). Exists → ask via `AskUserQuestion`:
 
-If state exists, ask via `AskUserQuestion`:
-
-- **Resume** — jump past completed steps; replay stored decisions and artifacts.
-- **Restart** — clear state; start from the first step of the mode file.
-- **Cancel** — abort; leave state untouched.
+- **Resume** → skip completed steps; replay stored decisions + artifacts.
+- **Restart** → clear state; start from mode file's first step.
+- **Cancel** → abort; leave state untouched.
 
 ## Dispatch
 
-Read `feature/stories/<$MODE>.md` and follow it from its first step. `$ISSUE_NUMBER` is already in scope.
+Read `feature/stories/<$MODE>.md` → follow from first step. `$ISSUE_NUMBER` in scope.
 
 ## Constraints
 
-- Never produce tracker output until the user confirms the picture is correct.
+- Never produce tracker output until user confirms the picture is correct.

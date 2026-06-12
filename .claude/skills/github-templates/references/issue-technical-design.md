@@ -12,10 +12,10 @@ Part of #<requirement_issue_number>
 ## 1. Executive Summary
 
 ### Problem Statement
-<2–3 sentences: gap/pain, why now>
+<gap/pain, why now>
 
 ### Goals
-- <What user gains>
+- <user gain>
 
 ---
 
@@ -27,7 +27,7 @@ Part of #<requirement_issue_number>
 ### Integration Flows
 
 #### Happy Path
-<ASCII sequence diagram. Participants must be high-level system modules only: actors (e.g. Customer, Admin) and major system boundaries (e.g. Web, API, Database, External Service). Omit all implementation details — internal libraries, state managers, hooks, query clients, and sub-components must not appear as participants.>
+<ASCII sequence diagram — success path>
 
 #### Unhappy Path
 <ASCII sequence: failure scenario, system response>
@@ -38,10 +38,10 @@ Part of #<requirement_issue_number>
 ### Components Design
 
 #### Backend
-<High-level actors only (endpoint, validator, handler, specification, repository, …) — one-phrase responsibility each, tagged [NEW]/[MODIFIED]/existing. Interconnections via ASCII box-and-arrow diagram. No code-level details: no method signatures, class members, or validation rules. Design decisions go in prose next to the diagram.>
+<ASCII box-and-arrow diagram: actors tagged [NEW]/[MODIFIED]/existing, with design-decision notes>
 
 #### Frontend
-<High-level actors only: pages, UI sub-components, API clients, model layers — one-phrase responsibility each, tagged [NEW]/[MODIFIED]/existing. Interconnections via ASCII box-and-arrow diagram. No code-level details: no internal states, hooks wiring, query keys, props, or variables. Design decisions go in prose next to the diagram.>
+<ASCII box-and-arrow diagram: actors tagged [NEW]/[MODIFIED]/existing, with design-decision notes>
 
 ### Infrastructure Design
 <Cloud provider resources, networking, deployment topology — ASCII or N/A>
@@ -91,13 +91,13 @@ Part of #<requirement_issue_number>
 |-------|-----|-------|
 | `requirement_issue` | yes | e.g. `#38` |
 | `sprint` | yes | e.g. `Sprint 5` |
-| `problem_statement` | yes | 2-3 sentences: gap/pain, why now |
+| `problem_statement` | yes | gap/pain, why now |
 | `goals` | yes | 2-6 user-centric items |
 | `high_level_diagram` | yes | ASCII diagram — label new vs existing |
-| `happy_path` | yes | ASCII sequence diagram. Participants: high-level system modules only — actors (Customer, Admin) and major system boundaries (Web, API, Database, External Service). No implementation details (hooks, query clients, state managers, sub-components). |
-| `unhappy_path` | yes | ASCII sequence: failure scenario + system response |
+| `happy_path` | yes | ASCII sequence diagram — success path |
+| `unhappy_path` | yes | ASCII sequence diagram — failure path |
 | `tech_stack` | yes | New tech only, or `No new technologies — uses existing stack` |
-| `components_design` | yes | Two sections — **Backend** and **Frontend**. Both: high-level actors only, one-phrase responsibility each, tagged [NEW]/[MODIFIED]/existing, interconnections via ASCII box-and-arrow diagram. No code-level details anywhere: no method signatures, class members, validation rules, query keys, hooks wiring, or prop/state specifics. Design decisions in prose next to the diagram. No sequence diagrams in either section. |
+| `components_design` | yes | **Backend** and **Frontend** sections — each an ASCII box-and-arrow diagram with actors tagged [NEW]/[MODIFIED]/existing, plus design-decision notes |
 | `infrastructure_design` | yes | Cloud provider resources, networking, deployment topology — ASCII or `N/A` |
 | `data_models` | yes | ERD/schema with indexes, or `No new data models — uses existing schema` |
 | `api_spec` | yes | Table: Method, Route, Auth, Request, Response, Status Codes |

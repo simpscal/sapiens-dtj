@@ -10,66 +10,71 @@ Navigator supplies `$DESCRIPTION`.
 
 ## Workflow
 1. Load Product Context
-2. Resolve Body
-3. Draft + Approve Loop
-4. Write Issue
-5. Provision Sprint
-6. Next Step
+2. Discovery Dialog
+3. Resolve Body
+4. Draft + Approve Loop
+5. Write Issue
+6. Provision Sprint
+7. Next Step
 
 ## Load Product Context
 
-Read `PRODUCT.md` from the repo root. Extract **Vision** and **Business Goals** and hold them.
+Read `PRODUCT.md` (repo root). Hold **Vision** + **Business Goals**.
+
+## Discovery Dialog
+
+Ask via `AskUserQuestion` (single call; skip what `$DESCRIPTION` already answers clearly):
+
+- **Problem / user need** — what problem, why now? The underlying need, not a proposed solution.
+- **Target users** — which segment(s).
+- **Success outcome** — what's true once shipped; how we'd know.
+- **Scope boundaries** — what's in, what's out.
+- **Constraints** — deadlines, dependencies, platforms, non-negotiables.
+
+Vague answer, or conflicts with PRODUCT.md **Vision** / **Business Goals** → focused follow-up `AskUserQuestion` first. Fold answers into `$DESCRIPTION` — the enriched need **Resolve Body** drafts from.
 
 ## Resolve Body
 
-Draft the body from `$DESCRIPTION`.
+Via `github-templates` skill, render body from `issue-requirement` template with `{summary, goals, out_of_scope}`.
 
-Via the `github-templates` skill, render the body from the `issue-requirement` template with `{summary, goals, out_of_scope}`.
-
-Append an **Alignment Check** block after the rendered summary:
+Append after the rendered summary:
 
 > **Alignment Check**
 > - Vision match: [yes / partial / no — one sentence]
 > - Business goal match: [which goal(s) it serves — or "none identified"]
 
-If both checks are "no", surface a warning.
+Both "no" → surface a warning.
 
 ## Draft + Approve Loop
 
-Compute `$DRAFT = .claude/state/feature-requirement-create.md`.
+`$DRAFT = .claude/state/feature-requirement-create.md` → write rendered body → `AskUserQuestion`:
 
-Write `$DRAFT` with the rendered body from **Resolve Body**.
+> Draft `<$DRAFT>`:
+> - **Approve** → write issue
+> - **Adjust** → describe change → re-render draft
+> - **Cancel** → abort; draft stays on disk
 
-Ask via `AskUserQuestion`:
-
-> Draft at `<$DRAFT>`. Choose:
->
-> - **Approve** — write the issue.
-> - **Adjust** — describe what to change; re-render and rewrite the draft.
-> - **Cancel** — abort; leave the draft on disk.
-
-- **Adjust** — ask via `AskUserQuestion` for `$ADJUSTMENT`, fold into `$DESCRIPTION`, re-run **Resolve Body**, overwrite `$DRAFT`, re-prompt.
-- **Cancel** — halt.
-- **Approve** — proceed to **Write Issue**.
+- **Adjust** → `$ADJUSTMENT` → fold into `$DESCRIPTION` → re-run **Resolve Body** → overwrite `$DRAFT` → re-prompt
+- **Cancel** → halt
+- **Approve** → **Write Issue**
 
 ## Write Issue
 
-Via the `github` skill, create an issue titled `[Requirement] <concise title>` with the rendered body, label `requirement`. Hold the issue number as `$REQ_ISSUE_NUMBER`.
+Via `github` skill, create issue `[Requirement] <concise title>`, rendered body, label `requirement` → hold `$REQ_ISSUE_NUMBER`.
 
 Delete `$DRAFT` via `Bash: rm`.
 
 ## Provision Sprint
 
-Via the `github` skill:
+Via `github` skill:
+1. **Next Sprint Number** → `$SPRINT_N`.
+2. **Ensure Sprint** for `$SPRINT_N` — create `Sprint $SPRINT_N` option.
+3. **Register Issue on Board** for `#$REQ_ISSUE_NUMBER` — Type `Feature`, Status `Todo`, Sprint `Sprint $SPRINT_N`.
 
-1. Run **Next Sprint Number** → `$SPRINT_N`.
-2. Run **Ensure Sprint** for `$SPRINT_N` — create the `Sprint $SPRINT_N` option.
-3. Run **Register Issue on Board** for `#$REQ_ISSUE_NUMBER` — Type `Feature`, Status `Todo`, Sprint `Sprint $SPRINT_N`.
-
-Resolve every codebase the project exposes (api / web / infrastructure paths). Via the `git` skill, for each create the sprint branch for Sprint `$SPRINT_N`.
+Resolve every codebase (api / web / infrastructure). Via `git` skill, create the sprint branch for `$SPRINT_N` in each.
 
 ## Next Step
 
-Requirement issue filed. Print the next command:
+Requirement filed. Next:
 
-- `/feature:stories:create <requirement_issue>` — decompose into sprint stories
+- `/feature break the requirement into stories`

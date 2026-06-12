@@ -16,45 +16,46 @@ Navigator supplies `$ISSUE_NUMBER` (the requirement issue).
 
 ## Decompose
 
-Read requirement `#$ISSUE_NUMBER` in full. Derive a one-sentence sprint goal from it. Via the `user-stories` skill, decompose into user stories — apply INVEST, phrase ACs as user-observable behaviour, run the testability linter, order by dependency depth then user value. Hold as `$STORIES` + `rewrote_for_testability`.
+Read requirement `#$ISSUE_NUMBER` → derive 1-sentence sprint goal. Via `user-stories` skill, decompose → `$STORIES` + `rewrote_for_testability`:
 
-If `rewrote_for_testability` is non-empty, surface `N ACs were rewritten for testability — see details below` and the list before continuing.
+- INVEST
+- ACs as user-observable behaviour
+- run testability linter
+- order by dependency depth → user value
 
-Via the `github` skill, read `#$ISSUE_NUMBER`'s board Sprint value → `$SPRINT_N`. If absent, halt: `⛔ Issue #$ISSUE_NUMBER has no board Sprint — provision the sprint via /feature:requirement:create first.`
+`rewrote_for_testability` non-empty → surface `N ACs were rewritten for testability — see details below` + the list before continuing.
+
+Via `github` skill, read `#$ISSUE_NUMBER`'s board Sprint → `$SPRINT_N`. Absent → halt `⛔ Issue #$ISSUE_NUMBER has no board Sprint — provision the sprint via /feature:requirement:create first.`
 
 ## Draft + Approve Loop
 
-Compute `$DRAFT = .claude/state/feature-stories-<$ISSUE_NUMBER>.md`.
+`$DRAFT = .claude/state/feature-stories-<$ISSUE_NUMBER>.md` → write every story spec field verbatim from `$STORIES` (`title`, `user_story`, `acceptance_criteria`, Notes per the `user-stories` skill's Notes rules). Add `## Testability rewrites` section when `rewrote_for_testability` non-empty.
 
-Write `$DRAFT` rendering every story spec field verbatim from `$STORIES` — `title`, `user_story`, `acceptance_criteria`, Notes per the user-stories skill's Notes rendering rules. Include a `## Testability rewrites` section when `rewrote_for_testability` is non-empty.
+`AskUserQuestion`:
 
-Ask via `AskUserQuestion`:
+> Draft `<$DRAFT>` — `<N>` stories:
+> - **Approve** → create GitHub issues from the draft
+> - **Adjust** → describe change → re-decompose → rewrite draft
+> - **Cancel** → abort; draft stays on disk
 
-> Draft at `<$DRAFT>` — `<N>` stories. Choose:
->
-> - **Approve** — create GitHub issues from the draft.
-> - **Adjust** — describe what to change; re-decompose and rewrite the draft.
-> - **Cancel** — abort; leave the draft on disk.
-
-- **Adjust** — ask via `AskUserQuestion` for `$ADJUSTMENT`, fold into the decomposition context, re-run, overwrite `$DRAFT`, re-prompt.
-- **Cancel** — halt.
-- **Approve** — proceed to **Persist**.
+- **Adjust** → `$ADJUSTMENT` → fold into decomposition context → re-run → overwrite `$DRAFT` → re-prompt
+- **Cancel** → halt
+- **Approve** → **Persist**
 
 ## Persist
 
-Via the `github` skill, for each spec in `$STORIES`:
+Via `github` skill, per spec in `$STORIES`:
 
-1. Create an issue titled `spec.title` with label `user-story`, body rendered from the `issue-user-story` template via the `github-templates` skill with `{user_story, acceptance_criteria, notes, requirement_issue: $ISSUE_NUMBER}`.
-2. Via the `github` skill, run **Register Issue on Board** — Type `Feature`, Status `Todo`, Sprint `Sprint $SPRINT_N`.
+1. Create issue `spec.title`, label `user-story`, body from `issue-user-story` template (via `github-templates` skill) with `{user_story, acceptance_criteria, notes, requirement_issue: $ISSUE_NUMBER}`.
+2. **Register Issue on Board** — Type `Feature`, Status `Todo`, Sprint `Sprint $SPRINT_N`.
 
-After all issues exist, back-fill dependency references in Notes (resolve `spec.notes.depends_on_titles` to issue numbers) for both `Depends on` and `Blocks` directions.
+After all issues exist → back-fill dependency refs in Notes (resolve `spec.notes.depends_on_titles` → issue numbers) for both `Depends on` + `Blocks`.
 
 Delete `$DRAFT` via `Bash: rm`.
 
 ## Next Step
 
-Sprint stories filed. Print the next command:
+Sprint stories filed. Next:
 
-- `/feature:design:create <sprint_number>` — compose Storybook surfaces for UI stories
-- `/feature:technical-design:create <sprint_number>` — author the TDD
-
+- `/feature design the Storybook surfaces`
+- `/feature write the technical design`

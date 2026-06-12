@@ -84,14 +84,25 @@ Inside Claude Code, run `/setup` and pick **All**. It generates:
 | GitHub labels | `requirement`, `user-story`, `bug`, etc. — safe to re-run |
 | GitHub Project board | Status / Type / Sprint fields — the workflow's tracking surface; safe to re-run |
 
+> [!TIP]
+> Give every registered codebase its own `CLAUDE.md`. The implementation agents read it to learn each repo's build/test commands, folder structure, naming, and patterns — the richer it is, the more the generated code matches your conventions. Skip it and agents fall back to inference, which is slower and less faithful.
+
 ### 3. Kick off your first sprint
 
+Each workflow has one natural-language entry command — just say what you want:
+
 ```
-/feature:requirement:create "Next feature on the backlog"
+/feature "Next feature on the backlog"
+```
+
+`/feature`, `/bugfix`, and `/refactor` read your plain-English intent and run the right phase. To drive an entire workflow end-to-end (requirement → stories → design → TDD → implement) — auto-approving routine gates, clarifying the need with you up front, then pausing before pre-release — use `/auto`:
+
+```
+/auto "Next feature on the backlog"
 ```
 
 > [!TIP]
-> Not sure which command to run? `/help-flows` asks your intent and prints the exact command to copy-paste.
+> Not sure which workflow? Just describe the work to `/feature`, `/bugfix`, or `/refactor` — each routes to the right step. Or `/auto` to run it end-to-end.
 
 > [!NOTE]
 > Non-disruptive. Only `.claude/` and `PRODUCT.md` are added. Existing issues, PRs, and branches stay untouched.
@@ -100,226 +111,41 @@ Inside Claude Code, run `/setup` and pick **All**. It generates:
 
 ## 🔄 Workflows
 
-<details>
-<summary><strong>Feature Development</strong> — the standard sprint cycle</summary>
+Four workflows, one shape: AI does the work, you approve at each gate — scope, plan, code review, release.
 
-Story branches merge to **staging** for verification, then to the **sprint branch** on pass. Sprint branch stays clean.
+| Workflow | Entry | Covers |
+|----------|-------|--------|
+| [🆕 Feature](docs/workflows/feature.md) | `/feature` | Sprint cycle — requirement → stories → design → TDD → implement → release; plus in-sprint bugs & refactors that ride the sprint branch |
+| [🐛 Bugfix](docs/workflows/bugfix.md) | `/bugfix` | Production bug lifecycle — report → fix → release via `main` |
+| [🧹 Refactor](docs/workflows/refactor.md) | `/refactor` | Standalone tech-debt cleanup, no user-visible change — spec → implement → release via `main` |
+| [🗂 Backlog](docs/workflows/backlog.md) | `/backlog` | Capture ideas, bugs, and refactors as drafts, then promote them into a workflow |
 
-```mermaid
-flowchart TD
-    A(["/feature:requirement:create"]) --> B["Requirement issue"]
-    B --> G1{Gate 1\nPO review}
-    G1 -->|Approve| C(["/feature:stories:create"])
-    C --> D["Story + Tech issues"]
-    D --> G2{Gate 2\nReview stories}
-    G2 -->|Approve| E1(["/feature:design:create"])
-    E1 --> F1["Storybook stories"]
-    F1 --> E2(["/feature:technical-design:create"])
-    E2 --> F2["TDD issue"]
-    F2 --> G3{Gate 3\nReview TDD + design}
-    G3 -->|Approve| H(["/feature:implement"])
-    H --> I["PR: story → staging"]
-    I --> G4{Gate 4\nCode review}
-    G4 -->|Approve| I2["Merge to staging"]
-    I2 --> G5{Gate 5\nVerify on staging}
-    G5 -->|Pass| QP2["Merge → sprint"]
-    QP2 --> MORE{More stories?}
-    MORE -->|Yes| H
-    MORE -->|No| PRE(["/feature:pre-release"])
-    G5 -->|Regression| FIX(["/feature:implement\n(user input)"])
-    FIX --> G5
-    PRE --> PRE1["Release PRs\nsprint → main"]
-    PRE1 --> G6{Gate 6\nReview release PRs}
-    G6 -->|Approve| REL(["/feature:release"])
-    REL --> REL1["Merge + close all"]
-    REL1 --> L([Sprint shipped])
-```
-
-</details>
-
-<details>
-<summary><strong>Bugfix (Production)</strong> — bugs found in production</summary>
-
-Independent of sprint cycle. Fix PRs hit **staging** for verification, then `main`.
+Every phase pauses for human review before the next begins:
 
 ```mermaid
-flowchart TD
-    A(["/bugfix:report"]) --> CLS{Classify source}
-    CLS -->|Production| B["Bug issue"]
-    B --> G1{Gate 1\nReview bug}
-    G1 -->|Approve| C(["/bugfix:story"])
-    C --> D["Acceptance criteria"]
-    D --> G2{Gate 2\nReview ACs}
-    G2 -->|Approve| H(["/bugfix:implement"])
-    H --> INV["Investigation\n+ approve gate"]
-    INV --> I["Fix PR → staging"]
-    I --> G3{Gate 3\nCode review}
-    G3 -->|Merged| I2["Merge to staging"]
-    I2 --> G4{Gate 4\nVerify on staging}
-    G4 -->|Pass| PRE(["/bugfix:pre-release"])
-    PRE --> PRE1["Readiness + migration check"]
-    PRE1 --> G5{Gate 5\nReview fix PRs}
-    G5 -->|Approve| J(["/bugfix:release"])
-    J --> J1["Merge + close"]
-    J1 --> K([Bug fixed])
-    G4 -->|Still broken| FIX(["/bugfix:implement\n(user input)"])
-    FIX --> G4
+flowchart LR
+    SCOPE[Scope] -->|approve| PLAN[Plan<br/>stories · design · TDD]
+    PLAN -->|approve| BUILD[Implement]
+    BUILD -->|review| VERIFY[Verify]
+    VERIFY -->|approve| SHIP[Release]
 ```
 
-</details>
-
-<details>
-<summary><strong>Bugfix (Development)</strong> — bugs found during sprint work</summary>
-
-Part of sprint cycle. Fix PRs target the **sprint branch**. Dev bugs block sprint release until closed.
-
-```mermaid
-flowchart TD
-    A(["/bugfix:report"]) --> CLS{Classify source}
-    CLS -->|Development| B["Bug issue\n+ originating story"]
-    B --> G1{Gate 1\nReview bug}
-    G1 -->|Approve| C(["/bugfix:story"])
-    C --> D["Acceptance criteria"]
-    D --> G2{Gate 2\nReview ACs}
-    G2 -->|Approve| H(["/bugfix:implement"])
-    H --> INV["Investigation\n+ approve gate"]
-    INV --> I["Fix PR → sprint"]
-    I --> G3{Gate 3\nCode review}
-    G3 -->|Approve| PRE(["/bugfix:pre-release"])
-    PRE --> PRE1["Readiness check"]
-    PRE1 --> G4{Gate 4\nReview fix PRs}
-    G4 -->|Approve| J(["/bugfix:release"])
-    J --> J1["Merge + close"]
-    J1 --> K([Bug fixed\nrelease unblocked])
-    G3 -->|Still broken| FIX(["/bugfix:implement\n(user input)"])
-    FIX --> G3
-```
-
-</details>
-
-<details>
-<summary><strong>Upstream Change</strong> — requirement or story shifts mid-sprint</summary>
-
-A change to an upstream artifact cascades downstream through stories, design, TDD, dev, and QA incrementally. Two entry points — a requirement-level scope shift or an AC-level story amendment — converge on the same regenerate-and-cascade path. All stages of `/feature` — no separate workflow.
-
-```mermaid
-flowchart TD
-    A1(["/feature:requirement:amend"]) --> B["Requirement updated"]
-    B --> C(["/feature:stories:regenerate"])
-    A2(["/feature:stories:regenerate"]) --> D
-    C --> D["Change plan"]
-    D --> G1{Gate 1\nApprove plan}
-    G1 -->|Approve| E["Update / create / close stories"]
-    E --> F{UI changes?}
-    F -->|Yes| FA(["/feature:design:regenerate"])
-    FA --> FA2["Storybook updated"]
-    FA2 --> T
-    F -->|No| T{Tech changes?}
-    T -->|Yes| TA(["/feature:technical-design:regenerate"])
-    TA --> TA2["TDD updated"]
-    TA2 --> H(["/feature:implement"])
-    T -->|No| H
-    H --> I["Revisit PR → staging"]
-```
-
-**When to amend design and TDD:**
-
-| Change type | Design | TDD |
-|-------------|--------|-----|
-| New UI surface or interaction | Yes | Maybe |
-| Changed layout, component, or visual state | Yes | Maybe |
-| New API endpoint or data model | No | Yes |
-| Changed business logic or backend behaviour | No | Yes |
-| UI + backend change together | Yes | Yes |
-| Copy/label wording only | No | No |
-
-</details>
-
-<details>
-<summary><strong>Refactoring</strong> — tech-debt and structural cleanup</summary>
-
-No sprint, no separate verification stage. Branch from `main`, PR to `main`. DoD requires existing tests pass and no user-visible behavior change.
-
-```mermaid
-flowchart TD
-    A(["/refactor:spec:create"]) --> B["Discovery dialog"]
-    B --> C["Codebase exploration"]
-    C --> D["Refactor issue"]
-    D --> G1{Gate 1\nReview spec}
-    G1 -->|Approve| H(["/refactor:implement"])
-    H --> I["Branch from main"]
-    I --> J["PR: refactor → main"]
-    J --> G2{Gate 2\nCode review}
-    G2 -->|Approve| PRE(["/refactor:pre-release"])
-    PRE --> PRE1["Readiness + migration check"]
-    PRE1 --> G3{Gate 3\nReview refactor PRs}
-    G3 -->|Approve| REL(["/refactor:release"])
-    REL --> REL1["Merge + close"]
-    REL1 --> L([Refactor shipped])
-```
-
-</details>
+Run `/auto` to flow through every phase automatically — it clarifies the need with you up front, then pauses before pre-release.
 
 ---
 
 ## ⚡ Commands
 
-Each workflow is a set of **navigators**. Run the entry command — the navigator asks which mode (create / regenerate / etc.) and resolves arguments interactively.
-
-### 🗂 `/backlog` — Pre-sprint capture
-
-| Command | Run by | What it does |
-|---------|--------|-------------|
-| `/backlog:add [free text]` | Anyone | Quick-capture an idea, refactor, or production bug as a board draft (title + type + notes) — without touching the current sprint. |
-| `/backlog:list` | Anyone | Show backlog drafts grouped by type (Feature / Refactor / Bug). |
-| `/backlog:promote` | PO / Tech Lead | Promote a draft into its typed flow — feature requirement, refactor spec, or bug report — with full templates and approval gates; the draft is removed once the issue exists. |
-
-### 🆕 `/feature` — Sprint feature lifecycle
-
-| Command | Run by | What it does |
-|---------|--------|-------------|
-| `/feature:requirement` | PO | Create or amend a requirement. Create auto-provisions a board Sprint. |
-| `/feature:stories` | BA | Decompose requirement into stories, or regenerate them after a scope delta (requirement change or user input). |
-| `/feature:design` | Designer | Compose or regenerate per-surface Storybook stories via the ui-design agent (story change or user input). |
-| `/feature:technical-design` | Tech Lead | Author or regenerate the sprint TDD (story change or user input). |
-| `/feature:implement <story_issue>` | Dev | Implement one story — fresh or revisit (delta-only) based on prior implementation. |
-| `/feature:pre-release <sprint_number>` | Release Mgr | Readiness gate, migration check, create release PRs (sprint → main), post sprint summary. |
-| `/feature:release <sprint_number>` | Release Mgr | Merge release PRs, delete story branches, mark all sprint issues Done + close. |
-
-### 🐛 `/bugfix` — Bug lifecycle (production and development)
-
-| Command | Run by | What it does |
-|---------|--------|-------------|
-| `/bugfix:report [description]` | PO | Clarify bug interactively, classify source (production / development), open tracker issue. |
-| `/bugfix:story <bug_issue>` | BA | Author Acceptance Criteria on the bug issue. |
-| `/bugfix:implement <bug_issue>` | Dev | Investigate root cause (draft + approve gate), then fix — fresh or revisit. |
-| `/bugfix:pre-release <bug_issue>` | Release Mgr | Readiness gate, migration check (production), post bug summary. |
-| `/bugfix:release <bug_issue>` | Release Mgr | Merge bugfix PRs, mark Done on the board, close issue. |
-
-> **Production bugs** branch from `main`, PR to `main`. **Development bugs** branch from the sprint branch, PR to the sprint branch, and block sprint release until closed.
-
-### 🧹 `/refactor` — Tech-debt and structural cleanup
-
-| Command | Run by | What it does |
-|---------|--------|-------------|
-| `/refactor:spec` | Tech Lead | Create or amend a refactor spec (draft + approve gate). |
-| `/refactor:implement <refactor_issue>` | Dev | Implement the spec — preserves observable behaviour. |
-| `/refactor:pre-release <refactor_issue>` | Release Mgr | Readiness gate, migration check, post summary. |
-| `/refactor:release <refactor_issue>` | Release Mgr | Merge refactor PRs, close issue. |
-
-### 🛠 `/setup` — One-off setup
+Say what you want — each workflow has one plain-English entry command that runs the right step:
 
 | Command | What it does |
 |---------|-------------|
-| `/setup` | Pick **All** (full setup) or individual: project-config, labels, board, product. |
-
-### 🧭 `/help-flows` — Workflow picker
-
-| Command | What it does |
-|---------|-------------|
-| `/help-flows` | Asks intent, prints exact next command to copy-paste. |
-| `/help-flows <intent>` | Free-text intent (e.g. `i want to fix a bug`); resolves to one command. |
-| `/help-flows all` | Prints full cheat sheet of every stage. |
+| `/feature <text>` | Feature work — e.g. `start checkout revamp`, `write the stories`, `implement 42`, `ship sprint 3` |
+| `/bugfix <text>` | Bug work — e.g. `login returns 500`, `fix 26`, `close 26` |
+| `/refactor <text>` | Tech-debt — e.g. `tidy the payment module`, `implement 51` |
+| `/backlog <text>` | Capture an idea or bug, or promote a draft into a workflow |
+| `/auto <text>` | Run a whole workflow end-to-end; clarifies the need up front, then pauses before pre-release |
+| `/setup` | One-off project setup — codebases, product doc, labels, board |
 
 ---
 
@@ -333,11 +159,11 @@ What the issue is. Set once on creation.
 
 | | Label | Artifact |
 |---|-------|---------|
-| ![](https://placehold.co/15x15/e4e669/e4e669.png) | `requirement` | PO requirement created via `/feature:requirement:create` |
-| ![](https://placehold.co/15x15/c2e0c6/c2e0c6.png) | `user-story` | Story created via `/feature:stories` |
-| ![](https://placehold.co/15x15/d73a4a/d73a4a.png) | `bug` | Bug reported via `/bugfix:report`; source from title prefix (`[Bug]` production, `[Dev Bug]` development) |
-| ![](https://placehold.co/15x15/1d76db/1d76db.png) | `refactoring` | Refactor spec created via `/refactor:spec:create` |
-| ![](https://placehold.co/15x15/fef2c0/fef2c0.png) | `requirement-updated` | Informational marker — requirement changed mid-sprint; follow with `/feature:stories:regenerate` |
+| ![](https://placehold.co/15x15/e4e669/e4e669.png) | `requirement` | PO requirement, via `/feature` |
+| ![](https://placehold.co/15x15/c2e0c6/c2e0c6.png) | `user-story` | Story, via `/feature` |
+| ![](https://placehold.co/15x15/d73a4a/d73a4a.png) | `bug` | Bug, via `/bugfix`; source from title prefix (`[Bug]` production, `[Dev Bug]` development) |
+| ![](https://placehold.co/15x15/1d76db/1d76db.png) | `refactoring` | Refactor, via `/refactor` |
+| ![](https://placehold.co/15x15/fef2c0/fef2c0.png) | `requirement-updated` | Informational marker — requirement changed mid-sprint |
 
 ### 🔁 Board Status (Project field)
 
@@ -345,8 +171,8 @@ Where an item sits in the pipeline. Commands move it as work progresses.
 
 | Status | Meaning | What happens next |
 |--------|---------|------------------|
-| `Backlog` | Captured draft via `/backlog:add` — not yet planned | `/backlog:promote` |
-| `Todo` | Issue filed, not started | implement command |
+| `Backlog` | Captured draft via `/backlog` — not yet planned | `/backlog` |
+| `Todo` | Issue filed, not started | `/feature` · `/bugfix` · `/refactor` |
 | `In Progress` | Dev is currently implementing | — |
 | `Implemented` | PRs open / merged to staging, awaiting verification | Human merges branch → sprint, or amend ACs then re-implement |
 | `Done` | Released and closed | — |

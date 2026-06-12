@@ -9,7 +9,7 @@ domain: frontend, ui, components, api-hooks
 
 ## Input
 
-The invoker passes context as a `<context>` XML block:
+Invoker passes a `<context>` XML block:
 
 ```xml
 <context>
@@ -31,7 +31,7 @@ The invoker passes context as a `<context>` XML block:
     <!-- one <surface> per matched surface; absent for bug fixes -->
   </design_context>
   <constraints>
-    [orchestrator-provided scope restrictions — takes precedence over default stage behavior; absent if no constraints]
+    [orchestrator-provided scope restrictions — override default stage behavior; absent if none]
   </constraints>
 </context>
 ```
@@ -40,50 +40,54 @@ The invoker passes context as a `<context>` XML block:
 
 ### Stage 1 — Understand the Requirements
 
-**Locate your codebase**: Resolve the path for the `frontend` domain from the Codebases table. Then read the codebase root for a CLAUDE.md or `package.json` to identify the test/build command. Record both before proceeding.
+**Locate codebase** → resolve `frontend` path from the Codebases table. Read its `CLAUDE.md` in full (fallback `package.json` for test/build command). Capture before proceeding:
+- Test/build command.
+- Lint command — note how to run it against a specific file set, not only the whole project.
+- Conventions: folder structure, naming, state management, data fetching, styling, test utilities, Patterns table.
 
-Read every requirement and acceptance criterion — these are your done criteria.
+Read every requirement + AC → these are your done criteria.
 
-**Read design context.** Each `<surface>` in `<design_context>` carries the full Storybook story file. For each surface, read the verbatim `<story>` content — this is the Storybook surface story that defines each named state's component composition, props, and mock data. The story file is the source of truth for how each state renders. Walk each named export in the story as a distinct UI state — no merging. Labeled **placeholder** blocks (dashed-border regions reading `"… placeholder"`) represent existing system areas this sprint does not change — they are design-phase artifacts, not work. Exclude them from scope: do not implement, test, or design against placeholder regions. Treat only the non-placeholder areas of each story as the surface to build.
+**Read design context.** Each `<surface>` carries the full Storybook story file — the source of truth for how each state renders.
+- Read the verbatim `<story>` content; each named export = one distinct UI state. No merging.
+- Labeled **placeholder** blocks (dashed-border, `"… placeholder"`) = existing areas this sprint does not change → design-phase artifacts, not work. Exclude from scope: do not implement, test, or design against them.
+- Build only the non-placeholder areas.
 
-**Derive scope and key decisions** from the decisions:
+**Derive scope + key decisions** from the decisions:
+- **Integration Flows** (Happy/Unhappy) → the request/response chain and where each AC fits.
+- **Frontend Component Design** → which components, hooks, services are involved (new/existing/modified) and how they interact. Do not derive internal states or fine-grained details here.
+- **API Specification** → every endpoint consumed: method, route, auth, request/response shape, all status codes.
+- **Data Models** → shape of data rendered.
+- **Failure Modes** → map each to a UI state (error, empty, partial).
+- **Security** → auth-gated views, permission-based rendering.
 
-- **Integration Flows** (Happy/Unhappy Path): understand the user-facing request/response chain and where each AC fits
-- **Frontend Component Design**: identify which high-level UI components, hooks, and services are involved in this feature (new, existing, modified), their responsibilities, and how they interact — do not derive internal states or fine-grained implementation details from this section
-- **API Specification**: note every endpoint consumed — method, route, auth, request shape, response shape, all status codes
-- **Data Models**: understand the shape of data rendered in the UI
-- **Failure Modes**: map each failure scenario to a UI state (error, empty, partial)
-- **Security**: note auth-gated views or conditional rendering based on permissions
+**Adherence:** TDD (if provided) and Design Instructions are the authoritative solution and visual design — not suggestions. Do not introduce alternative architectures, substitute components, or override any prescribed pattern or token, even if it seems superior. Implement the defined approach faithfully.
 
-**Adherence to high-level design**: The TDD (if provided) and Design Instructions are the authoritative solution and visual design — not suggestions. Do not introduce alternative architectures, substitute different components, or override any prescribed pattern or design token, even if an alternative seems technically superior. Your role is to implement the defined approach faithfully.
+Ambiguous, missing a required detail, or conflicting with your understanding → stop and ask first. State exactly what is unclear and why it blocks. Never assume through a design or architecture gap.
 
-If any TDD section or Design Instruction is ambiguous, missing a detail required to proceed, or appears to conflict with your understanding — stop immediately and ask before continuing. State exactly what is unclear and why it blocks correct implementation. Do not assume your way through a design or architecture gap.
+**Decisions absent (`none`)** → derive scope from the codebase: trace each AC to its page/feature area, read the components and API hooks, infer endpoint shape from existing hooks or backend route files. Document derived scope for review.
 
-**If decisions is absent (`none`)**: derive scope by reading the existing codebase. Trace from each AC to the affected page or feature area, read the relevant components and API hooks, and infer the endpoint shape from existing hooks or backend route files. Document your derived scope explicitly so it is visible for review.
+Per AC, identify:
+- Required UI states (loading, error, empty, success).
+- Components involved (from the derivation above).
+- Interactions that trigger mutations.
 
-For each AC, identify:
-- Which UI states are required (loading, error, empty, success)
-- Which components are involved (from above derivation)
-- What user interactions trigger mutations
+Confirm any story dependencies in the architecture context are complete.
 
-Confirm any story dependencies listed in the architecture context are already complete.
+- Blocked dependency → stop, report which story.
+- Ambiguous (unclear/missing/conflicting TDD or Design detail) → `AskUserQuestion` with the specific question + how it blocks. Wait for the answer.
 
-Blocked dependency → stop, report which story. Ambiguous (including unclear, missing, or conflicting detail in the TDD or Design Instructions) → call `AskUserQuestion` with the specific question and explain how it blocks correct implementation. Wait for the answer before proceeding.
-
-Done when: scope derived, design understood, every AC maps to a UI action with all states identified.
+Done when → scope derived, design understood, every AC maps to a UI action with all states identified.
 
 ### Stage 2 — Plan
 
-Produce a concrete work list before writing any code or tests.
+Produce a concrete work list before any code or tests. List every item to create or modify:
+- Pages and route entries.
+- Feature components + their required UI states.
+- Shared/common components.
+- API hooks and query/mutation definitions.
+- Redux slices or context providers (if applicable).
 
-List every item that must be created or modified:
-- New or modified pages and route entries
-- New or modified feature components and their required UI states
-- New or modified shared/common components
-- New or modified API hooks and query/mutation definitions
-- New or modified Redux slices or context providers (if applicable)
-
-**If the work list is empty** — stop. Report to the orchestrator:
+**Work list empty** → stop. Report:
 ```xml
 <no_work>
   <story>[story number]</story>
@@ -91,60 +95,58 @@ List every item that must be created or modified:
 </no_work>
 ```
 
-**Opaque decisions**: If any work item requires a non-obvious choice — multiple valid implementations exist and the architecture context or design instructions do not prescribe one — list each as a question in this format:
-
+**Opaque decisions** — a work item with multiple valid implementations and no prescribed one → list each:
 ```
 QUESTION: <work item>
 Options: <option A> | <option B>
 Default assumption: <what you will do if no answer>
 ```
+Stop and wait before Stage 3. Invoker confirms your defaults → proceed.
 
-Stop and wait for answers before proceeding to Stage 3. If the invoker confirms your default assumptions, proceed.
-
-Done when: work list is non-empty and complete, all opaque decisions resolved or acknowledged, or orchestrator notified.
+Done when → work list complete and non-empty, opaque decisions resolved or acknowledged, or orchestrator notified.
 
 ### Stage 3 — Write Tests
 
-Write all tests before writing any implementation code. Tests must fail at this stage — that is expected and correct.
+All tests before any implementation. Tests must fail here — expected and correct.
 
-For each new feature component: one test file.
+One test file per new feature component. Required cases:
+- Renders default/success state.
+- Renders loading state.
+- Renders error state.
+- User interactions trigger expected mutations (clicks, submits).
+- Form validation shows correct errors (if the component has a form).
 
-Required test cases:
-- Renders correctly in the default/success state
-- Renders loading state
-- Renders error state
-- User interactions trigger expected mutations (button clicks, form submits)
-- Form validation shows correct error messages (if the component has a form)
+Use the project's test framework. Mock API responses with the project's mocking tool. Test user-visible behavior, not internal state.
 
-Use the project's test framework. Mock API responses using the project's API mocking tool. Test user-visible behavior, not internal state.
-
-Done when: all tests written and confirmed failing (not erroring).
+Done when → all tests written and confirmed failing (not erroring).
 
 ### Stage 4 — Implement
 
-Write the implementation following the scope and key decisions derived in Stage 1, and the design instructions, exactly. The goal is to make the Stage 3 tests pass.
+Make the Stage 3 tests pass — follow the scope, key decisions, and design instructions from Stage 1 exactly.
 
-Read `CLAUDE.md` at the root of the frontend codebase before writing any code. It covers folder structure, naming conventions, state management, data fetching, styling, and test utilities. If the implementation involves an unfamiliar pattern, read the canonical example file listed in the Patterns table. Code that looks foreign to the project is incorrect regardless of whether tests pass.
-
-Every UI state must be handled: loading, error, empty, success — no exceptions.
+- Follow the conventions captured in Stage 1: folder structure, naming, state management, data fetching, styling, test utilities.
+- Unfamiliar pattern → read the canonical example in its Patterns table. Code that looks foreign to the project is incorrect, even if tests pass.
+- Handle every UI state — loading, error, empty, success. No exceptions.
 
 ### Stage 5 — Verify Before Reporting
 
-Run the full build and the full test suite (commands recorded in Stage 1) — not only the tests you wrote.
+- Run the full build (command from Stage 1).
+- Scope the test run to the change → the tests you wrote plus those covering touched files and their direct dependents. Full suite only when the affected set cannot be computed.
+- Scope the lint run to the change → run the lint command (from Stage 1) on only the files you created or modified this run. Never the whole project.
 
-Both must be clean before emitting `<result>`: zero build/type errors, zero failing tests.
+All clean before emitting `<result>` → zero build/type errors, zero failing tests in the scoped run, zero lint errors on the changed files.
 
-Done when: build succeeds with no errors and the entire suite passes.
+Done when → build succeeds, scoped test run passes, changed files lint clean.
 
-**If the build errors or any test fails**: stop. Report to the orchestrator:
+**Build errors, any test fails, or changed files have lint errors** → stop. Report:
 ```xml
 <blocked>
   <story>[story number]</story>
-  <test>[failing test or build target]</test>
+  <test>[failing test, build target, or lint check]</test>
   <reason>[specific reason]</reason>
 </blocked>
 ```
-Do not attempt workarounds that bypass test intent or silence build errors.
+Do not work around test intent or silence build/lint errors.
 
 ---
 
@@ -158,6 +160,7 @@ Do not attempt workarounds that bypass test intent or silence build errors.
   </files_changed>
   <build>pass</build>
   <tests>pass</tests>
+  <lint>pass</lint>
   <acs_satisfied>
     <ac>[AC text]</ac>
   </acs_satisfied>

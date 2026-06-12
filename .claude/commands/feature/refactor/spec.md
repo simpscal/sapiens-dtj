@@ -1,21 +1,31 @@
 ---
-name: refactor:spec:create
-description: Draft a new standalone refactor spec — discovery dialog, parallel codebase exploration, design, draft + approve gate, then file as an issue. Covers any technical system improvement: code quality, tooling, DX, CI/infrastructure, observability, documentation systems, or capability expansions that do not change user-visible behaviour.
+name: feature:refactor:spec
+description: Draft a new in-sprint refactor spec — discovery dialog, resolve the active sprint, parallel codebase exploration on the sprint branch, design, draft + approve gate, then file as an issue on the sprint. Covers any technical system improvement that does not change user-visible behaviour.
 tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 ---
 
-# Refactor Spec — Create
+# Feature Refactor Spec
 
-Refactor scoped to an active sprint → use `/feature:refactor:spec`.
+Standalone refactor shipped to `main` → use `/refactor:spec:create`.
 
 ## Workflow
-1. Discovery Dialog
-2. Explore Codebase
-3. Resolve Blocking Questions
-4. Design Refactoring Spec
-5. Draft + Approve Loop
-6. Create Refactoring Issue
-7. Next Step
+1. Resume Check
+2. Discovery Dialog
+3. Resolve Sprint
+4. Explore Codebase
+5. Resolve Blocking Questions
+6. Design Refactoring Spec
+7. Draft + Approve Loop
+8. Create Refactoring Issue
+9. Next Step
+
+## Resume Check
+
+Look up resume state (`workflow = feature`, `run_key = refactor-spec-create`). Exists → ask via `AskUserQuestion`:
+
+- **Resume** → skip completed steps; replay stored decisions + artifacts.
+- **Restart** → clear state; start from **Discovery Dialog**.
+- **Cancel** → abort; leave state untouched.
 
 ## Discovery Dialog
 
@@ -27,9 +37,13 @@ Ask via `AskUserQuestion` (single call):
 
 Vague answer → follow-up `AskUserQuestion`.
 
+## Resolve Sprint
+
+Via `github` skill, resolve active sprint → `$SPRINT_N`. None → halt `⛔ No sprint on the board. File a standalone refactor with /refactor:spec:create, or run /feature:requirement:create first.`
+
 ## Explore Codebase
 
-Via `git` skill, in each in-scope codebase → check out `main` (exploration reflects the exact base state the work builds on).
+Via `git` skill, in each in-scope codebase → check out the sprint branch for `$SPRINT_N` (exploration reflects the exact base state the work builds on).
 
 Spawn one `Explore` subagent per in-scope codebase **in parallel**. Transformative work → find what must change; additive work → find what's missing.
 
@@ -92,7 +106,7 @@ Produce:
 
 ## Draft + Approve Loop
 
-`$DRAFT = .claude/state/refactor-spec-create.md` → write every **Design Refactoring Spec** field via the `issue-refactoring` template.
+`$DRAFT = .claude/state/feature-refactor-spec-create.md` → write every **Design Refactoring Spec** field via the `issue-refactoring` template.
 
 `AskUserQuestion`:
 
@@ -109,15 +123,15 @@ Produce:
 
 Via `github` skill, create an issue in the **orchestrator repo**:
 
-- **Title**: `[Refactor] <short imperative description>`
+- **Title**: `[Dev Refactor] <short imperative description>`
 - **Label**: `refactoring`
 - **Body**: `issue-refactoring` template (via `github-templates` skill) with all **Design Refactoring Spec** fields.
-- **Board**: **Register Issue on Board** — Type `Refactor`, Status `Todo`. No Sprint.
+- **Board**: **Register Issue on Board** — Type `Refactor`, Status `Todo`, Sprint `Sprint $SPRINT_N`.
 
 Delete `$DRAFT` via `Bash: rm`.
 
 ## Next Step
 
-Refactor spec filed. Next:
+In-sprint refactor spec filed on Sprint $SPRINT_N. Next:
 
-- `/refactor implement the spec`
+- `/feature implement the refactor spec`

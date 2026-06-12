@@ -1,10 +1,10 @@
 ---
-name: refactor:implement
-description: Implement one refactor task. Detects Fresh / Revisit from existing PRs, manages branches, dispatches agents, commits, opens PRs, and posts notification.
+name: feature:refactor:implement
+description: Implement one in-sprint refactor on the sprint branch. Detects Fresh / Revisit from existing PRs, manages branches, dispatches agents, commits, opens PRs, and posts notification.
 tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 ---
 
-# Refactor Implement
+# Feature Refactor — Implement
 
 Implement **one refactor per invocation** — do not batch.
 
@@ -23,7 +23,7 @@ Implement **one refactor per invocation** — do not batch.
 
 ## Resume Check
 
-Look up resume state (`workflow = refactor`, `run_key = implement-<refactor_issue>`). Exists → ask via `AskUserQuestion`:
+Look up resume state (`workflow = feature`, `run_key = refactor-implement-<refactor_issue>`). Exists → ask via `AskUserQuestion`:
 
 - **Resume** → skip completed steps; replay stored decisions + artifacts.
 - **Restart** → clear state; start from **Fetch Refactor Issue**.
@@ -32,6 +32,8 @@ Look up resume state (`workflow = refactor`, `run_key = implement-<refactor_issu
 ## Fetch Refactor Issue
 
 Via `github` skill, fetch the issue in full (title, body, labels). Missing `refactoring` label → halt `⛔ Issue #<N> does not have the refactoring label. This mode is for refactoring tasks only.`
+
+Resolve `$SPRINT_N` from board Sprint (`Sprint N`). No board Sprint → halt `⛔ Dev refactor #<N> has no board Sprint. Assign it to the active sprint on the board first, or use /refactor for a standalone refactor.`
 
 Set board Status `In Progress` → assign current user (**Assign Issue**).
 
@@ -44,7 +46,7 @@ Resolve codebases from `$ISSUE_PLAN`'s Affected Codebases → `$CODEBASES`.
 Via `git` skill, per codebase → list open PRs scoped to this issue with `branch_kind = refactor`:
 
 - **Open PR found** → **Revisit**. Check out the existing PR branch.
-- **No open PR** → **Fresh**. Create a refactor branch.
+- **No open PR** → **Fresh**. Create a refactor branch from the sprint branch.
 
 ## Classify Change Origin
 
@@ -79,7 +81,7 @@ Via `git` skill, per codebase with `files_changed` in `$AGENT_RESULTS` → commi
 
 **Fresh:** via `git` skill, per codebase that produced work → open a PR:
 
-- Base: `main`.
+- Base: sprint branch.
 - Title: `refactor(#<N>): <short description>`.
 - Body: `pr-refactor` template via `github-templates` skill.
 
@@ -96,6 +98,6 @@ Via `github` skill, run **Notify Implementation Complete** on `#refactor_issue`:
 
 ## Next Step
 
-Refactor implemented. Next:
+In-sprint refactor implemented on the sprint branch. Next:
 
-- `/refactor run the readiness gate`
+- `/feature merge the refactor into the sprint`

@@ -1,56 +1,58 @@
 ---
 name: feature:merge
-description: Merge one story's open PRs into the sprint branch — resolve the story, extract its PRs from the Implementation Complete or Revert Ready comment, confirm, then squash-merge each.
+description: Merge one sprint item's open PRs into the sprint branch — resolve the story, in-sprint bug, or in-sprint refactor, extract its PRs from the Implementation Complete / Refactor Complete / Revert Ready comment, confirm, then squash-merge each.
 tools: Read, Bash, AskUserQuestion
 ---
 
 # Feature Merge
 
-Merge **one story per invocation**. Parse `$ARGUMENTS`: the single token is `story_issue_number`.
+Merge **one sprint item per invocation** — a story, in-sprint bug, or in-sprint refactor. Parse `$ARGUMENTS`: single token = `issue_number`.
 
 ## Workflow
-1. Fetch Story
+1. Fetch Item
 2. Extract PRs From Comment
 3. Confirm Merge
 4. Merge Into Sprint Branch
 5. Next Step
 
-## Fetch Story
+## Fetch Item
 
-Via the `github` skill, fetch issue `#story_issue_number` in full (title, labels, comments).
+Via `github` skill, fetch issue `#issue_number` in full (title, labels, comments).
 
-Guards:
+Guards — accept any in-sprint item:
 
-- Missing `user-story` label → halt: `⚠️ Issue #<N> is not a story (labels: <labels>).`
-- Title not prefixed `[Story]`, `[Tech]`, or `[Revert]` → halt: `⚠️ Issue #<N> title "<title>" must begin with [Story], [Tech], or [Revert].`
+- Label `user-story`, title `[Story]` / `[Tech]` / `[Revert]` → a story.
+- Label `bug`, title `[Dev Bug]` → an in-sprint bug.
+- Label `refactoring`, title `[Dev Refactor]` → an in-sprint refactor.
+- None of the above → halt `⚠️ Issue #<N> (labels: <labels>, title "<title>") is not an in-sprint story, bug, or refactor. Production bugs and standalone refactors merge via /bugfix:release or /refactor:release.`
 
-Derive `$SPRINT_N` from the issue's board Sprint value (`Sprint N`); build `$SPRINT_BRANCH = feature/sprint-<$SPRINT_N>`.
+Derive `$SPRINT_N` from board Sprint (`Sprint N`) → `$SPRINT_BRANCH = feature/sprint-<$SPRINT_N>`. No board Sprint → halt `⛔ Issue #<N> has no board Sprint — it is not an in-sprint item.`
 
-Locate the completion comment — body starts `## Implementation Complete` **or** `## Revert Ready`. Use the latest such comment → `$COMPLETION_COMMENT`. If neither exists, halt: `⛔ Issue #<N> has no Implementation Complete or Revert Ready comment — run /feature:implement <N> first.`
+Locate the completion comment — body starts `## Implementation Complete`, `## Refactor Complete`, **or** `## Revert Ready`. Latest such → `$COMPLETION_COMMENT`. None → halt `⛔ Issue #<N> has no completion comment — run its implement command first.`
 
 ## Extract PRs From Comment
 
 Parse `$COMPLETION_COMMENT` for PR links:
 
-- **Implementation Complete** — single: `- PR: <url>`; multi: `- <codebase>: <url>` per codebase.
+- **Implementation Complete** / **Refactor Complete** — single: `- PR: <url>`; multi: `- <codebase>: <url>` per codebase.
 - **Revert Ready** — single: `- Revert PR: <url>`; multi: `- <codebase> revert PR: <url>` per codebase.
 
-Collect every PR URL → `$STORY_PRS`. If none found, halt: `⛔ No PR links in the completion comment for #<N> — re-run /feature:implement <N>.`
+Collect every PR URL → `$ITEM_PRS`. None → halt `⛔ No PR links in the completion comment for #<N> — re-run its implement command.`
 
 ## Confirm Merge
 
-For each PR in `$STORY_PRS`, via the `git` skill **Fetch PR**, read its `state`, `merged`, head and base. Partition:
+Per PR in `$ITEM_PRS`, via `git` skill **Fetch PR** → read `state`, `merged`, head, base. Partition:
 
 - **$OPEN_PRS** — open, not merged. The merge set.
 - **$MERGED_PRS** — already merged. Skip; report `↺ already merged`.
 - **$STALE_PRS** — closed but not merged. Skip; warn.
 
-If `$OPEN_PRS` is empty, print one `↺ already merged` line per `$MERGED_PRS` entry and jump to **Next Step**.
+`$OPEN_PRS` empty → print one `↺ already merged` line per `$MERGED_PRS` entry → jump to **Next Step**.
 
-Otherwise print the plan:
+Else print the plan:
 
 ```
-Story #<N> — <title>  →  merge into <$SPRINT_BRANCH>
+#<N> — <title>  →  merge into <$SPRINT_BRANCH>
 
 To merge (squash):
   - <pr_title>  (#<pr_number>)
@@ -60,13 +62,13 @@ Closed, NOT merged (skipped — review manually):
   - <pr_title>  (#<pr_number>)
 ```
 
-For each `$OPEN_PRS` entry, via the `git` skill **Diff Branch Files** (`$SPRINT_BRANCH`...head) list the changed paths.
+Per `$OPEN_PRS` entry, via `git` skill **Diff Branch Files** (`$SPRINT_BRANCH`...head) → list changed paths.
 
 Ask via `AskUserQuestion`: `Merge the listed PR(s) into <$SPRINT_BRANCH>?` — proceed only on confirmation.
 
 ## Merge Into Sprint Branch
 
-Via the `git` skill **Merge PR** operation (squash, **Keep branch** path — do not delete the head branch), for each `$OPEN_PRS` entry merge it into the sprint branch. Run sequentially. On failure, stop, surface the reason, and tell the user to re-run `/feature:merge <N>`. Output per PR:
+Via `git` skill **Merge PR** (squash, **Keep branch** — do not delete head), per `$OPEN_PRS` entry → merge into the sprint branch. Sequential. On failure → stop, surface the reason, tell the user to re-run `/feature:merge <N>`. Output per PR:
 
 ```
 ✓ Merged <pr_title> into <$SPRINT_BRANCH>
@@ -74,7 +76,7 @@ Via the `git` skill **Merge PR** operation (squash, **Keep branch** path — do 
 
 ## Next Step
 
-Story PRs merged into the sprint branch. Print:
+PRs merged into the sprint branch. Next:
 
-- `/feature:merge <next_story_issue>` — merge the next reviewed story
-- `/feature:pre-release <sprint_number>` — once every story is merged
+- `/feature merge the next reviewed story, bug, or refactor`
+- `/feature pre-release the sprint` — once every item is merged

@@ -19,13 +19,13 @@ Parse `$CAPTURE_TEXT` for:
 
 - **Title** — one line, what the item is.
 - **Type** — Feature / Refactor / Bug (infer only when unambiguous, e.g. "bug:", "fix crash", "refactor").
-- **Notes** — any remaining detail (optional).
+- **Notes** — remaining detail (optional).
 
-Ask via `AskUserQuestion` for whatever is missing — title and type only; never ask for notes. This is quick capture: no alignment checks, no AC drafting, no approval loop.
+Ask via `AskUserQuestion` for whatever's missing — title + type only; never ask for notes. Quick capture: no alignment checks, no AC drafting, no approval loop.
 
 ## Create Draft
 
-Via the `github` skill, run **Create Backlog Draft** with `{title, body: notes, type}`. Hold the returned item ID as `$ITEM_ID`. On a missing-board or missing-scope error, surface the skill's message and stop.
+Via `github` skill, run **Create Backlog Draft** with `{title, body: notes, type}` → hold returned item ID → `$ITEM_ID`. Missing-board or missing-scope error → surface the skill's message → stop.
 
 Output: `Captured to backlog: [<Type>] <Title>`
 

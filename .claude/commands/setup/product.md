@@ -12,11 +12,10 @@ tools: Read, Write, Edit, AskUserQuestion
 
 ## Generate PRODUCT.md
 
-Via the `product-spec` skill, create `PRODUCT.md` at the repo root — it handles the full workflow: existence check (Skip / Regenerate gate), interview, write, and confirm.
+Via `product-spec` skill, create `PRODUCT.md` at the repo root — it handles the full workflow: existence check (Skip / Regenerate gate), interview, write, confirm.
 
 ## Next Step
 
-PRODUCT.md generated — project setup complete. Print:
+PRODUCT.md generated — project setup complete. Next:
 
-- `/feature:requirement:create <description>` — start the first feature
-- `/help-flows` — see all workflows
+- `/feature start the first feature`

@@ -6,7 +6,10 @@ tools: Bash
 
 ## Repo Derivation
 
-Derive at runtime, never hardcode; hold for the session. Run from the relevant repo root — orchestration repo for issues/board/stories/TDD/design, codebase directory (path from the Codebases table) for PRs/branches:
+Derive at runtime, never hardcode; hold for the session. Run from the relevant repo root:
+
+- Issues/board/stories/TDD/design -> orchestration repo.
+- PRs/branches -> codebase directory (path from the Codebases table).
 
 ```bash
 gh repo view --json owner,name --jq '[.owner.login,.name]|join("/")'
@@ -56,13 +59,19 @@ Format: `#id` (e.g. `#17`) — use in issue bodies and comments.
 
 ## Project Board (Projects v2)
 
-The board is the single tracking surface: the **Status** field replaces lifecycle labels, the **Sprint** single-select field replaces milestones, and **Type** (Feature / Refactor / Bug) classifies items. All board operations go through `.claude/scripts/board.sh`, which resolves the project by title and field/option IDs by name at runtime, caching the resolution in the gitignored `.claude/state/board.json` (refreshed automatically on lookup miss and after sprint-option mutations — never edit or commit it). Requires the `project` token scope; if a call fails on scope, surface `gh auth refresh -s project --hostname github.com`. If no board exists, surface `run /setup:board first`.
+Board = single tracking surface:
+
+- **Status** replaces lifecycle labels.
+- **Sprint** (single-select) replaces milestones.
+- **Type** (Feature / Refactor / Bug) classifies items.
+
+All board ops -> `.claude/scripts/board.sh`. Resolves project by title + field/option IDs by name at runtime, caching to gitignored `.claude/state/board.json` (auto-refreshed on lookup miss + after sprint-option mutations — never edit or commit it). Needs `project` token scope; scope failure → surface `gh auth refresh -s project --hostname github.com`. No board → surface that the project board isn't provisioned yet.
 
 Status lifecycle: `Backlog` (captured draft) → `Todo` (issue filed) → `In Progress` (implement start) → `Implemented` (PRs open, awaiting merge) → `Done` (released + closed).
 
 ### Resolve Active Sprint
-- `bash .claude/scripts/board.sh current-sprint` — prints the highest `Sprint N` option → `$SPRINT_N` from its number.
-- Script halts if none: `⛔ No sprint on the board. Run /feature:requirement:create first.`
+- `bash .claude/scripts/board.sh current-sprint` — prints the highest `Sprint N` that still has active (non-Done) work → `$SPRINT_N` from its number.
+- Script halts if none: `⛔ No active sprint on the board.`
 
 ### Next Sprint Number
 - `bash .claude/scripts/board.sh next-sprint-number` — prints max(N)+1.
@@ -71,7 +80,7 @@ Status lifecycle: `Backlog` (captured draft) → `Todo` (issue filed) → `In Pr
 - `bash .claude/scripts/board.sh ensure-sprint {N}` — appends the `Sprint N` option if missing. Idempotent.
 
 ### Register Issue on Board
-After creating an issue, add it and set its fields (Sprint only for sprint-scoped work — stories, TDD, requirement, dev bugs; refactors and production bugs get none):
+After creating an issue, add it and set its fields (Sprint for sprint-scoped work — stories, TDD, requirement, in-sprint bugs, in-sprint refactors; standalone refactors and production bugs get none):
 - `bash .claude/scripts/board.sh add-issue {id}`
 - `bash .claude/scripts/board.sh set-type {id} {Feature|Refactor|Bug}`
 - `bash .claude/scripts/board.sh set-status {id} Todo`
@@ -93,12 +102,12 @@ After creating an issue, add it and set its fields (Sprint only for sprint-scope
 - `bash .claude/scripts/board.sh delete-item {item-id}` — used after promoting a draft.
 
 ### Load Sprint Snapshot
-Resolve Active Sprint, run `list-sprint "Sprint N" --open-only` once (closed issues are out of sprint scope), then partition in memory and read all present partitions in parallel:
+Resolve Active Sprint → `list-sprint "Sprint N" --open-only` once (closed issues = out of sprint scope) → partition in memory → read all present partitions in parallel:
 
 - **$STORIES** — open issues labelled `user-story`. Read each in full.
 - **$REQUIREMENT** — single open issue labelled `requirement`. May be absent.
 - **$TDD** — single open issue whose title contains `Technical Design Document`. Read in full. May be absent.
-- **$DESIGN** — the design hub comment on `$REQUIREMENT` (comment body starting `## Design Navigation`), whose Surfaces table links each surface's Storybook story file. Resolve by reading `$REQUIREMENT`'s comments — design is a comment, never a labelled issue. May be absent. Callers read the linked story files for the surfaces they need.
+- **$DESIGN** — design hub comment on `$REQUIREMENT` (body starts `## Design Navigation`); its Surfaces table links each surface's Storybook story file. Resolve via `$REQUIREMENT`'s comments — design is a comment, never a labelled issue. May be absent. Callers read the linked story files for surfaces they need.
 
 ## Notify Implementation Complete
 
@@ -106,9 +115,14 @@ Two mandatory mutations on issue `#ISSUE_NUMBER` — run **both**, never stop af
 
 #### Step 1 — Post or update completion comment
 
-Fetch comments (`gh issue view {id} --repo {owner}/{repo} --json comments`). If one starts with `## Refactor Complete`, `## Implementation Complete`, or `## Revert Ready` → update it via **Update Comment** (do not post new). Else post a new comment via **Post Comment**.
+Fetch comments (`gh issue view {id} --repo {owner}/{repo} --json comments`). One starts with `## Refactor Complete`, `## Implementation Complete`, or `## Revert Ready` → update via **Update Comment** (don't post new). Else → **Post Comment**.
 
-Pick **mode** (refactor / revert / implementation) and **variant** — **Single-PR** (one PR) or **Multi-PR** (one bullet per PR, labelled by codebase name from the Codebases table, e.g. `api`, `web`, `infrastructure` — never hardcode `Backend`/`Frontend`). Substitute every `<pr-url>` with the actual URL.
+Pick **mode** (refactor / revert / implementation) + **variant**:
+
+- **Single-PR** — one PR.
+- **Multi-PR** — one bullet per PR, labelled by codebase name from the Codebases table (e.g. `api`, `web`, `infrastructure`) — never hardcode `Backend`/`Frontend`.
+
+Substitute every `<pr-url>` with the actual URL.
 
 **Refactor — single-PR:**
 ```
@@ -117,7 +131,7 @@ Pick **mode** (refactor / revert / implementation) and **variant** — **Single-
 - PR: <pr-url>
 
 ---
-> ⏸ Human gate: Review the PR diff. When approved, merge into `main`.
+> ⏸ Human gate: Review the PR diff. When approved, merge the PR into its base — `main` for a standalone refactor, or the sprint branch for an in-sprint refactor.
 ```
 
 **Refactor — multi-PR** (one bullet per codebase):
@@ -128,7 +142,7 @@ Pick **mode** (refactor / revert / implementation) and **variant** — **Single-
 - <codebase-name>: <pr-url>
 
 ---
-> ⏸ Human gate: Review all PR diffs. When approved, merge into `main`.
+> ⏸ Human gate: Review all PR diffs. When approved, merge the PRs into their base — `main` for a standalone refactor, or the sprint branch for an in-sprint refactor.
 ```
 
 **Revert — single-PR:**

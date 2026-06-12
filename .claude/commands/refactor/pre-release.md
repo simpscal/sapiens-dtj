@@ -20,42 +20,34 @@ tools: Read, Write, Glob, Grep, Bash, AskUserQuestion
 
 ## Resume Check
 
-Look up resume state (`workflow = refactor`, `run_key = pre-release-<refactor_issue>`).
+Look up resume state (`workflow = refactor`, `run_key = pre-release-<refactor_issue>`). Exists → ask via `AskUserQuestion`:
 
-If state exists, ask via `AskUserQuestion`:
-
-- **Resume** — jump past completed steps; replay stored decisions and artifacts.
-- **Restart** — clear state; start from **Parse Arguments**.
-- **Cancel** — abort; leave state untouched.
+- **Resume** → skip completed steps; replay stored decisions + artifacts.
+- **Restart** → clear state; start from **Parse Arguments**.
+- **Cancel** → abort; leave state untouched.
 
 ## Parse Arguments
 
 Parse `$ARGUMENTS` as the refactor issue number (e.g. `42`).
 
-If `$ARGUMENTS` is empty: list all open issues labeled `refactoring` whose board Status is `Implemented`, show the results for the user to choose from, then stop.
+Empty → list all open `refactoring` issues with board Status `Implemented` → show for the user to choose → stop.
 
 ## Fetch Issue
 
-Via the `github` skill, read issue `#issue_number` — title, labels, state.
+Via `github` skill, read issue `#issue_number` — title, labels, state.
 
-- If missing `refactoring` label, stop:
-  ```
-  ⛔ Issue #N is not a refactoring task (labels: <labels>). Use /refactor:pre-release only for refactoring issues.
-  ```
-- If already closed, stop:
-  ```
-  ℹ Issue #N is already closed.
-  ```
+- Missing `refactoring` label → stop `⛔ Issue #N is not a refactoring task (labels: <labels>). Use /refactor:pre-release only for refactoring issues.`
+- Already closed → stop `ℹ Issue #N is already closed.`
 
 ## Readiness Gate
 
-For each codebase repo, list refactor PRs for issue N. If no PRs found, stop:
+Per codebase repo → list refactor PRs for issue N. None → stop:
 
 ```
 ⛔ No refactor PRs found for #N. Run /refactor:implement {N} first.
 ```
 
-Verify all PRs are open (not yet merged). List them:
+Verify all PRs open (not merged). List them:
 
 ```
 Refactor PRs for #N:
@@ -66,13 +58,13 @@ Proceed.
 
 ## Build & Test Gate
 
-For each codebase repo with an open refactor PR for issue N, check out the PR branch:
+Per codebase repo with an open refactor PR for issue N → check out the PR branch:
 
-- Discover the build and test commands from the codebase root (CLAUDE.md, solution file, Makefile, or `package.json`).
+- Discover build + test commands from codebase root (CLAUDE.md, solution file, Makefile, or `package.json`).
 - Run the full build.
 - Run the full test suite.
 
-If any codebase fails to build or has failing tests, halt:
+Any codebase fails build or has failing tests → halt:
 
 ```
 ⛔ Refactor #N not ready to close. Build/test failures:
@@ -82,22 +74,22 @@ If any codebase fails to build or has failing tests, halt:
 Fix on the refactor branch, then run /refactor:pre-release {N} again.
 ```
 
-Proceed only when every codebase with changes builds clean and all tests pass.
+Proceed only when every codebase with changes builds clean + all tests pass.
 
 ## Check for Migrations (Backend Only)
 
-For the backend codebase, find the open refactor PR for issue N and scan its changed files against the migration detection rule from the `project-config` skill.
+For the backend codebase → find the open refactor PR for issue N → scan its changed files against the migration detection rule from `project-config` skill.
 
-- No backend PR found → "No backend PR found for #N — skipping migration check."
+- No backend PR → "No backend PR found for #N — skipping migration check."
 - Migration files found → surface warning.
 - No migration files → "No database migrations in this refactor."
 
 ## Post Summary
 
-Render the `comment-refactor-summary` template via the `github-templates` skill with `{issue_number, title, date, migrations}`. Via the `github` skill, post as a comment on `#issue_number`. `migrations` carries the Check for Migrations result, or `None`.
+Render `comment-refactor-summary` template (via `github-templates` skill) with `{issue_number, title, date, migrations}` → post as a comment on `#issue_number` via `github` skill. `migrations` carries the Check for Migrations result, or `None`.
 
 ## Next Step
 
-Refactor readiness gate passed. Print the next command:
+Refactor readiness gate passed. Next:
 
-- `/refactor:release <refactor_issue>` — merge and close the refactor
+- `/refactor release and close the refactor`

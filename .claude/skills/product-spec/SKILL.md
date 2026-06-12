@@ -20,23 +20,29 @@ Both destructive ops (Regenerate, Overwrite) require confirmation; Skip is the d
 
 ## Create
 
-Confirm `PRODUCT.md` absent (or Regenerate/Overwrite chosen). Interview through the Question Bank in canonical section order, one `AskUserQuestion` each, applying Specificity Tests with follow-ups. Surface any out-of-canon content (offer a bottom section or omit). Run a consistency pass over all answers, resolve contradictions, then author `PRODUCT.md` at the repo root per File Structure with concrete content. Confirm with path + one-line summary per section.
+Confirm `PRODUCT.md` absent (or Regenerate/Overwrite chosen). Then:
+
+- Interview through the Question Bank in canonical section order — one `AskUserQuestion` each, applying Specificity Tests with follow-ups.
+- Surface any out-of-canon content (offer a bottom section or omit).
+- Consistency pass over all answers → resolve contradictions.
+- Author `PRODUCT.md` at the repo root per File Structure, concrete content.
+- Confirm with path + one-line summary per section.
 
 ## Amend
 
-Read `PRODUCT.md` (absent → stop: ``No `PRODUCT.md` found. Create it first.``). Capture the full baseline verbatim — every section, subsection, and non-canonical content; non-targeted sections are preserved byte-for-byte. Determine target section(s) from the arg via Section Argument Map, else ask which. Offer cascade revisits (not forced):
+Read `PRODUCT.md` (absent → stop: ``No `PRODUCT.md` found. Create it first.``). Capture the full baseline verbatim — every section, subsection, non-canonical content; non-targeted sections preserved byte-for-byte. Determine target section(s) from the arg via Section Argument Map, else ask which. Offer cascade revisits (not forced):
 
 - Vision → Core Value Proposition, Strategic Direction
 - Target Users → Core Value Proposition, Product Boundaries
 - Business Model → Business Goals, Strategic Direction
 
-Interview the targeted section(s), apply Specificity Tests, run a consistency pass against the untouched baseline, then rewrite per Apply Rules and overwrite `PRODUCT.md`. Confirm the section(s) updated.
+Interview targeted section(s) → apply Specificity Tests → consistency pass against untouched baseline → rewrite per Apply Rules → overwrite `PRODUCT.md` → confirm section(s) updated.
 
 ## Specificity Tests
 
 Apply after every interview answer; on failure ask a focused follow-up.
 
-**General (all sections):** could a new hire read this section alone and act consistently with it? If they'd need to ask "what did they really mean?", it fails.
+**General (all sections):** could a new hire read this section alone and act consistently with it? If they'd ask "what did they really mean?", it fails.
 
 | Section | Test |
 |---------|------|
@@ -132,9 +138,9 @@ Create asks each verbatim; Amend prefixes "the updated" or "now" where natural.
 
 ### Apply Rules
 
-- **Create** writes the file end-to-end using File Structure. Every section gets concrete content — no placeholders, `{…}` braces, or "TBD".
-- **Amend** edits only targeted section(s); every non-targeted section preserved byte-for-byte (headings, paragraphs, bullets, subsections, non-canonical sections at the bottom). Target `all` → rewrite all seven canonical sections, preserve non-canonical. Single section → rewrite only its body (and subsections), leave the heading unchanged.
-- Specificity Test failing after three follow-ups and the user agrees → write `Not yet defined.` as the section body.
+- **Create** writes the file end-to-end via File Structure. Every section gets concrete content — no placeholders, `{…}` braces, "TBD".
+- **Amend** edits only targeted section(s); non-targeted sections preserved byte-for-byte (headings, paragraphs, bullets, subsections, bottom non-canonical sections). Target `all` → rewrite all seven canonical sections, preserve non-canonical. Single section → rewrite only its body (+ subsections), leave heading unchanged.
+- Specificity Test failing after three follow-ups + user agrees → write `Not yet defined.` as the section body.
 
 ## Constraints
 

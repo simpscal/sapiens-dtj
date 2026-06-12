@@ -17,22 +17,20 @@ tools: Read, AskUserQuestion, Bash
 Ask via `AskUserQuestion` → `$MODE`:
 
 - **Create** — author a new TDD for the sprint.
-- **Regenerate** — regenerate the TDD sourced from changed story ACs or from the user's input.
+- **Regenerate** — regenerate the TDD from changed story ACs or user input.
 
 ## Infer Active Sprint
 
-Via the `github` skill, resolve the active sprint → `$SPRINT_N`. Halt if none: `⛔ No sprint on the board — run /feature:requirement:create first.`
+Via `github` skill, resolve active sprint → `$SPRINT_N`. None → halt `⛔ No sprint on the board — run /feature:requirement:create first.`
 
 ## Resume Check
 
-Look up resume state (`workflow = feature`, `run_key = technical-design-<$MODE>-<$SPRINT_N>`).
+Look up resume state (`workflow = feature`, `run_key = technical-design-<$MODE>-<$SPRINT_N>`). Exists → ask via `AskUserQuestion`:
 
-If state exists, ask via `AskUserQuestion`:
-
-- **Resume** — jump past completed steps; replay stored decisions and artifacts.
-- **Restart** — clear state; start from the first step of the mode file.
-- **Cancel** — abort; leave state untouched.
+- **Resume** → skip completed steps; replay stored decisions + artifacts.
+- **Restart** → clear state; start from mode file's first step.
+- **Cancel** → abort; leave state untouched.
 
 ## Dispatch
 
-Read `feature/technical-design/<$MODE>.md` and follow it from its first step. `$SPRINT_N` is already in scope.
+Read `feature/technical-design/<$MODE>.md` → follow from first step. `$SPRINT_N` in scope.

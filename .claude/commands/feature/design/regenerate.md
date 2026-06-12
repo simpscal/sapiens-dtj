@@ -14,44 +14,43 @@ Navigator supplies `$SPRINT_N`.
 3. Build Change Plan
 4. Draft + Approve Loop
 5. Run UI Design (ui-design agent)
-6. Commit + Push
-7. Upsert Design Hub Comment
-8. Next Step
+6. Review Agent Output
+7. Commit + Push
+8. Upsert Design Hub Comment
+9. Next Step
 
 ## Resolve Source
 
 Ask via `AskUserQuestion` → `$REGEN_SOURCE`:
 
-- **Story change** — diff existing surface stories against changed story ACs to detect which surfaces need updating. Use after stories were added, amended, or closed.
-- **User input** — user describes which surfaces to regenerate and why. Use when the change isn't reflected in story ACs.
+- **Story change** — diff existing surface stories against changed story ACs → which surfaces need updating. Use after stories were added, amended, or closed.
+- **User input** — user names which surfaces to regenerate and why. Use when the change isn't in story ACs.
 
 ## Load Sprint Context
 
-Via the `github` skill, load Sprint Snapshot for Sprint $SPRINT_N → `$STORIES`, `$REQUIREMENT`, `$DESIGN`.
-
-Halt if any precondition fails:
+Via `github` skill, load Sprint Snapshot for Sprint $SPRINT_N → `$STORIES`, `$REQUIREMENT`, `$DESIGN`. Halt if any precondition fails:
 
 - `$REQUIREMENT` absent → `⛔ No requirement issue found in Sprint $SPRINT_N. Cannot regenerate design without a requirement.`
 - `$STORIES` empty → `⛔ No user stories found in Sprint $SPRINT_N. Run /feature:stories:create <requirement_issue> first.`
-- `$DESIGN` absent (no `## Design Navigation` hub comment on the requirement issue) → `⛔ No design hub found on the requirement issue — run /feature:design:create $SPRINT_N first.`
+- `$DESIGN` absent (no `## Design Navigation` hub comment on the requirement) → `⛔ No design hub found on the requirement issue — run /feature:design:create $SPRINT_N first.`
 
-Restrict `$STORIES` to `[Story]`-prefixed titles — exclude `[Tech]` and `[Revert]`.
+Restrict `$STORIES` to `[Story]`-prefixed titles (exclude `[Tech]`, `[Revert]`).
 
-Resolve the frontend codebase. Check out its sprint branch for Sprint $SPRINT_N.
+Resolve the frontend codebase → check out its sprint branch for Sprint $SPRINT_N.
 
-Scan `src/stories/surfaces/` for `*.stories.tsx` files → derive `$EXISTING_SURFACES` (slug from filename: PascalCase → kebab-case). For each, read the story file to extract the rendered states and component list → `$SURFACE_STORIES[slug]`.
+Scan `src/stories/surfaces/` for `*.stories.tsx` → `$EXISTING_SURFACES` (slug = filename PascalCase → kebab-case). Per file → read rendered states + component list → `$SURFACE_STORIES[slug]`.
 
-Parse the hub comment's surfaces table → `$HUB_SURFACES` (slug + route + name for each surface already documented).
+Parse the hub comment's surfaces table → `$HUB_SURFACES` (slug + route + name per documented surface).
 
 ## Build Change Plan
 
-Produce `$REGEN_SURFACES` and `$REMOVED_SURFACES` per `$REGEN_SOURCE`:
+Produce `$REGEN_SURFACES` + `$REMOVED_SURFACES` per `$REGEN_SOURCE`:
 
 ### Story change
 
-Compare `$EXISTING_SURFACES` + `$HUB_SURFACES` against current `$STORIES` ACs. Identify changed ACs, added stories, and closed/missing stories. Halt if no differences: `⛔ No story changes found — design is already up to date.`
+Compare `$EXISTING_SURFACES` + `$HUB_SURFACES` against current `$STORIES` ACs → identify changed ACs, added stories, closed/missing stories. No differences → halt `⛔ No story changes found — design is already up to date.`
 
-Map each changed story to affected UI surfaces:
+Map each changed story → affected UI surfaces:
 
 | Affected Surface | Story | Classification | Planned Action |
 |---|---|---|---|
@@ -59,37 +58,34 @@ Map each changed story to affected UI surfaces:
 
 - **New** — story introduces a surface with no existing story file.
 - **Modified** — story ACs changed since the surface story was last authored.
-- **Removed** — story is closed or no longer covers this surface.
+- **Removed** — story closed or no longer covers this surface.
 
-Partition into `$REGEN_SURFACES` (New + Modified) and `$REMOVED_SURFACES` (Removed).
+Partition → `$REGEN_SURFACES` (New + Modified), `$REMOVED_SURFACES` (Removed).
 
 ### User input
 
-Ask via `AskUserQuestion`, hold as `$SURFACE_DELTA`: `Which surfaces need regenerating for Sprint $SPRINT_N, and what changed?` If too thin, ask one follow-up.
+Ask via `AskUserQuestion` → `$SURFACE_DELTA`: `Which surfaces need regenerating for Sprint $SPRINT_N, and what changed?` Too thin → one follow-up.
 
-Decompose `$SURFACE_DELTA` into discrete surface-level changes. For each, classify as **New**, **Modified**, or **Removed** by matching against `$EXISTING_SURFACES` and `$HUB_SURFACES`. A **User input** delta is targeted: never remove a surface the user didn't name.
+Decompose `$SURFACE_DELTA` → discrete surface-level changes → classify each **New** / **Modified** / **Removed** against `$EXISTING_SURFACES` + `$HUB_SURFACES`. **User input** is targeted: never remove a surface the user didn't name.
 
-Partition into `$REGEN_SURFACES` (New + Modified) and `$REMOVED_SURFACES` (Removed).
+Partition → `$REGEN_SURFACES` (New + Modified), `$REMOVED_SURFACES` (Removed).
 
 ## Draft + Approve Loop
 
-Compute `$DRAFT = .claude/state/feature-design-regen-sprint-<$SPRINT_N>.md`.
+`$DRAFT = .claude/state/feature-design-regen-sprint-<$SPRINT_N>.md` → write the full Change Plan table — call out every `$REMOVED_SURFACES` entry explicitly (deletes a surface story file).
 
-Write `$DRAFT` rendering the full Change Plan table — call out every `$REMOVED_SURFACES` entry explicitly (deletes a surface story file).
+`AskUserQuestion`:
 
-Ask via `AskUserQuestion`:
+> Draft `<$DRAFT>` — `<count>` to regenerate, `<count>` to remove:
+> - **Approve** → apply the plan
+> - **Adjust** → describe change → re-run **Build Change Plan** → rewrite draft
+> - **Cancel** → abort; no files or comments change
 
-> Draft at `<$DRAFT>` — `<count>` to regenerate, `<count>` to remove. Choose:
->
-> - **Approve** — apply the plan.
-> - **Adjust** — describe what to change; re-run **Build Change Plan** with the appended feedback; rewrite the draft.
-> - **Cancel** — abort; no files or comments change.
+- **Adjust** → `$ADJUSTMENT` → fold into change-plan inputs → re-run **Build Change Plan** → overwrite `$DRAFT` → re-prompt
+- **Cancel** → halt
+- **Approve** → **Run UI Design**
 
-- **Adjust** — ask via `AskUserQuestion` for `$ADJUSTMENT`, fold into the change-plan inputs, re-run **Build Change Plan**, overwrite `$DRAFT`, re-prompt.
-- **Cancel** — halt.
-- **Approve** — proceed to **Run UI Design**.
-
-Do not touch surface stories or the hub comment until the user approves.
+Do not touch surface stories or the hub comment until approved.
 
 ## Run UI Design
 
@@ -110,23 +106,42 @@ Spawn one **ui-design** agent with a `<context>` block:
 </context>
 ```
 
-The agent regenerates and removes the surface story files per the change plan.
+Agent regenerates + removes the surface story files per the change plan.
+
+Collect: `$SURFACES` ← `<surfaces_composed>`, `$CONFIRMATIONS` ← `<confirmations>`.
+
+## Review Agent Output
+
+`AskUserQuestion`:
+
+> Surfaces composed: `<$SURFACES list>`. `<count>` assumption(s) need confirmation: `<render each $CONFIRMATIONS item>`:
+> - **Approve** → commit the stories
+> - **Adjust** → describe corrections → re-run the design
+> - **Cancel** → abort; stories stay on disk, commit nothing
+
+- **Adjust** → `$ADJUSTMENT` → fold into `<change_input>` → re-run **Run UI Design** → return to this gate
+- **Cancel** → halt; stories on disk, nothing committed
+- **Approve** → **Commit + Push**
 
 ## Commit + Push
 
-Via the `git` skill, commit updated / created / deleted Storybook surface stories on the frontend sprint branch (`chore(design): regenerate sprint-{$SPRINT_N} surfaces`) and push. Resolve blob URLs.
+Via `git` skill → commit updated / created / deleted Storybook surface stories on the frontend sprint branch (`chore(design): regenerate sprint-{$SPRINT_N} surfaces`) → push → resolve blob URLs.
 
 ## Upsert Design Hub Comment
 
-Via the `github-templates` skill, re-render `comment-design-hub` with the full updated surfaces table — reuse `$DESIGN`'s existing rows for unaffected surfaces; replace rows for `$REGEN_SURFACES`; drop rows for `$REMOVED_SURFACES`.
+Via `github-templates` skill, re-render `comment-design-hub` with the full updated surfaces table:
 
-Via the `github` skill, edit `$DESIGN` (the located hub comment) in place. Create a new one on the requirement issue if absent.
+- reuse `$DESIGN`'s existing rows for unaffected surfaces
+- replace rows for `$REGEN_SURFACES`
+- drop rows for `$REMOVED_SURFACES`
+
+Via `github` skill → edit `$DESIGN` (the located hub comment) in place. Absent → create a new one on the requirement issue.
 
 Delete `$DRAFT` via `Bash: rm`.
 
 ## Next Step
 
-Surface stories regenerated. Print the next command:
+Surface stories regenerated. Next:
 
-- `/feature:technical-design:regenerate <sprint_number>` — reconcile the TDD
-- `/feature:implement <story_issue>` — implement against the new design
+- `/feature regenerate the technical design`
+- `/feature implement against the new design`
