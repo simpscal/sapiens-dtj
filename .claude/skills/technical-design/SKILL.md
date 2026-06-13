@@ -22,15 +22,15 @@ A role not in scope → mark its sections `N/A — out of scope`, do not omit.
 
 ## Per-role Probe Briefs
 
-Read `CLAUDE.md` (+ any role-scoped equivalent) before probing. Probe until you can answer the Discovery categories for in-scope roles:
+Read `CLAUDE.md` (+ any role-scoped equivalent) before probing. The agent forms its own hypotheses and picks what to read — the table below is orientation, not a checklist. Probe until you can answer the Discovery categories for in-scope roles:
 
 - Located closest existing analogue for each new component.
 - Identified convention to follow or diverge from.
 - Named where each new piece lives.
 
-Unresolved item -> Discovery blocker. Don't probe indefinitely.
+Unresolved item -> Discovery blocker. Don't probe indefinitely. Verify, don't assume: confirm each analogue/convention by reading the real file, never from memory of naming.
 
-| Role | What to explore |
+| Role | Starting points |
 |------|-----------------|
 | `backend` | Existing entities, models, DB tables; command/query handlers, services, repositories; API controllers/routes; auth/authz patterns. Record file paths, names, conventions, gaps. |
 | `frontend` | Existing pages, routes, feature folders; components; API client calls/hooks; state slices/query keys. Shared primitives/components/tokens — exist or closest analogue. Record file paths, names, conventions, gaps. |

@@ -61,6 +61,8 @@ Ask via `AskUserQuestion` → `$TDD_DELTA`: `What changed in the technical desig
 
 ## Amend the TDD
 
+Probe the codebase against `main` → revised decisions ground in the sprint's true baseline, never partially-implemented sprint-branch work (superseded prior-story decisions stay out of the revision).
+
 Via `technical-design` skill, spawn a subagent to revise the TDD. Pass: existing TDD body, all `$STORIES` (with implementation status), requirement body, design context (if present), `$AVAILABLE_CODEBASES`, `$CHANGE_INTENT`.
 
 Subagent: revises affected canonical sections → reconciles technical stories → classifies scope impact.

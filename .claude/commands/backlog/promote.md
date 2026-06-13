@@ -50,4 +50,4 @@ Print the typed flow's natural next step:
 - Refactor → `/refactor implement refactor $ISSUE_NUMBER`
 - Bug → `/bugfix add acceptance criteria to bug $ISSUE_NUMBER`
 
-Plus: `/backlog:list` — review remaining items.
+Plus: `/backlog show the backlog` — review remaining items.

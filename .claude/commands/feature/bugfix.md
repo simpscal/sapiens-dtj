@@ -1,7 +1,7 @@
 ---
 name: feature:bugfix
 description: Natural-language entry point for an in-sprint bug — say what you want and it runs the proper /feature:bugfix:* sub-command. For bugs found during sprint development; ships on the sprint branch.
-argument-hint: "[plain English — e.g. 'topbar overflows on the new dashboard', 'write ACs for 42', 'fix 42']"
+argument-hint: "[plain English — 'topbar overflows' → 'ACs for 42' → 'fix 42' → 'merge 42']"
 tools: Read, Bash, AskUserQuestion
 ---
 

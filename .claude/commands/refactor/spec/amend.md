@@ -42,7 +42,14 @@ Work through all loaded material silently — no output this step. From $REFACTO
 - what "done" looks like — which DoD items are objective vs subjective
 - what was explicitly excluded or constrained
 
-Complete when you can state the goal, name every file/module in scope, summarise every approach step, and flag what breaks if scope shifts — without re-reading. Then output:
+Complete when — without re-reading — you can:
+
+- state the goal
+- name every file / module in scope
+- summarise every approach step
+- flag what breaks if scope shifts
+
+Then output:
 
 > Technical Lead active — refactor #$ISSUE_NUMBER. Full knowledgebase loaded: [list what was loaded]. Ready to discuss changes or alternatives.
 
@@ -54,17 +61,31 @@ Use `$CHANGE_INPUT` to discuss — answer trade-off questions, surface constrain
 
 ## Re-explore (if scope expands)
 
-Confirmed change adds a codebase not in **Affected Codebases**, or expands into unmapped modules → spawn one `Explore` subagent per newly-in-scope area **in parallel**. Per-role brief:
+Change stays within existing Scope → skip. Confirmed change adds a codebase not in **Affected Codebases**, or expands into unmapped modules → spawn one `Explore` subagent per newly-in-scope area **in parallel**, each comparing against `main` so partial in-flight work + superseded prior decisions stay out of the revision.
 
-- **Backend**: files, classes, services, patterns to change; coupling points, duplication, structural issues. Return: file paths, class/method names, current pattern, what changes and why.
-- **Frontend**: components, hooks, utilities, state management affected; shared code, duplication, abstraction gaps. Return: file paths, component names, current pattern, what changes and why.
-- **Infrastructure**: IaC resources, modules, config affected. **Query live state** per newly-in-scope resource via the relevant cloud/platform API (running/stopped, attached/detached, exists/missing, rule present/absent) — don't assume what tooling can confirm. Return: file paths, resource names, current pattern, what changes and why; plus live state findings.
+**Brief each subagent** — hand it the confirmed change + the newly-in-scope area it owns. It forms own hypotheses, picks what to read — orient, don't checklist. Per-role starting points (orientation, not checklist):
 
-Change stays within existing Scope → skip.
+- **backend** — code, services, patterns in the change's path.
+- **frontend** — components, hooks, state, shared primitives in the path.
+- **infrastructure** — IaC resources, modules, config in the path.
+
+**Stop when** the subagent can, for its area:
+
+- name the closest existing analogue/pattern per change (with file path)
+- state the convention to follow or diverge from
+- name where each new or changed piece lives
+
+Can't resolve from code or tooling → blocking question, not a reason to keep probing.
+
+**Verify, don't assume** — confirm each claimed analogue/pattern by reading or grepping the real file, never from naming. Infrastructure → query live state per resource via the cloud/platform API (running/stopped, attached/detached, exists/missing, rule present/absent) — don't assume what tooling can confirm.
+
+**Return** per finding: file path, symbol name, current pattern, what changes and why; infrastructure adds live-state findings.
 
 ## Revise Spec
 
 Baseline = current spec. Output the **full revised spec**, not a diff.
+
+Ground every technical claim against `main`, never in-flight branch state → superseded prior decisions don't leak into the revision.
 
 Per section → decide whether the confirmed change affects it → keep unchanged sections exactly, rewrite only affected parts.
 

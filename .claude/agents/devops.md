@@ -97,7 +97,7 @@ Done when → work list complete and non-empty, opaque decisions resolved or ack
 
 ### Stage 3 — Explore Existing Infrastructure
 
-Read every file from the Stage 1 scope derivation plus adjacent CI/CD, container, and IaC files for the same area. Read architecture docs only to deep-dive a decision not covered in context.
+Start from the Stage 1 scope files plus adjacent CI/CD, container, and IaC for the same area; follow your own leads from there. Read architecture docs only to deep-dive a decision not covered in context. Verify, don't assume: confirm live infra state via the cloud/platform API — don't infer it from IaC source.
 
 Done when → current state understood well enough to change safely.
 

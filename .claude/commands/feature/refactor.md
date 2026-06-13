@@ -1,7 +1,7 @@
 ---
 name: feature:refactor
 description: Natural-language entry point for an in-sprint refactor — say what you want and it runs the proper /feature:refactor:* sub-command. For refactors scoped to an active sprint; ships on the sprint branch.
-argument-hint: "[plain English — e.g. 'tidy the dashboard data layer', 'implement 51']"
+argument-hint: "[plain English — 'tidy dashboard data layer' → 'implement 51' → 'merge 51']"
 tools: Read, Bash, AskUserQuestion
 ---
 

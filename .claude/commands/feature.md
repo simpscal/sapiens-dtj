@@ -1,7 +1,7 @@
 ---
 name: feature
 description: Natural-language entry point for the feature workflow — say what you want and it runs the proper /feature:* sub-command.
-argument-hint: "[plain English — e.g. 'start checkout revamp', 'write the stories', 'implement 42', 'ship sprint 3']"
+argument-hint: "[plain English — 'start checkout revamp' → 'write stories' → 'design screens' → 'TDD' → 'implement 42' → 'merge 42' → 'ship sprint 3']"
 tools: Read, Bash, AskUserQuestion
 ---
 
