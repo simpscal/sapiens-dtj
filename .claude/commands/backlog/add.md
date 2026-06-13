@@ -31,5 +31,5 @@ Output: `Captured to backlog: [<Type>] <Title>`
 
 ## Next Step
 
-- `/backlog:list` — review the backlog
-- `/backlog:promote` — promote an item into the workflow
+- `/backlog show the backlog` — review the backlog
+- `/backlog promote an item` — promote an item into the workflow

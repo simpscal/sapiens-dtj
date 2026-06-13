@@ -1,6 +1,6 @@
 ---
 name: bugfix:implement
-description: Implement one production bug fix. Detects Fresh / Revisit by scanning for an Implementation Complete comment, manages branches, dispatches agents, commits, opens PRs, and posts notification.
+description: Implement one production bug fix. Detects Fresh / Revisit via Implementation Complete comment, manages branches, investigates root cause (draft + approve gate), dispatches agents, commits, opens PRs, posts notification.
 tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 ---
 
@@ -8,22 +8,23 @@ tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion
 
 Implement **one bug fix per invocation** — do not batch.
 
-`$ARGUMENTS` carries `<bug_issue_number> [free-form intent]`. Leading token = `bug_issue_number`; remaining text = `$PHASE_INTENT` (optional).
+`$ARGUMENTS` = `<bug_issue_number> [free-form intent]`. First token → `bug_issue_number`; rest → `$PHASE_INTENT` (optional).
 
 ## Workflow
 1. Resume Check
 2. Fetch Bug Issue
 3. Branch Prep
 4. Classify Change Origin (Revisit only)
-5. Dispatch Agents
-6. Commit and Push
-7. Open PR
-8. Notify
-9. Next Step
+5. Investigate Root Cause
+6. Dispatch Agents
+7. Commit and Push
+8. Open PR
+9. Notify
+10. Next Step
 
 ## Resume Check
 
-Look up resume state (`workflow = bugfix`, `run_key = implement-<bug_issue_number>`). Exists → ask via `AskUserQuestion`:
+Resume state (`workflow = bugfix`, `run_key = implement-<bug_issue_number>`) exists → ask via `AskUserQuestion`:
 
 - **Resume** → skip completed steps; replay stored decisions + artifacts.
 - **Restart** → clear state; start from **Fetch Bug Issue**.
@@ -31,13 +32,13 @@ Look up resume state (`workflow = bugfix`, `run_key = implement-<bug_issue_numbe
 
 ## Fetch Bug Issue
 
-Via `github` skill, fetch issue `#bug_issue_number` in full (title, body, labels, comments).
+`github` skill → fetch `#bug_issue_number` in full (title, body, labels, comments).
 
 - Missing `bug` label → halt `⛔ Issue #<N> is not a bug (labels: <labels>). Use /feature:implement for stories.`
 
 Set board Status `In Progress` → assign current user (**Assign Issue**).
 
-Detect mode — scan comments for an implementation-complete notification:
+Detect mode — scan comments for implementation-complete notification:
 
 - Comment found → **Revisit**. Parse PR links → `$IMPL_PRS` → confirm each still open → `$OPEN_PRS`.
 - No comment → **Fresh**.
@@ -46,32 +47,54 @@ Detect mode — scan comments for an implementation-complete notification:
 
 Resolve every codebase → `$CODEBASES`.
 
-- **Fresh:** via `git` skill, per codebase → create a bugfix branch for issue `<N>` from `main`.
-- **Revisit:** via `git` skill, per `$OPEN_PRS` entry → check out the existing PR branch.
+- **Fresh** → `git` skill, per codebase → branch off `main` for issue `<N>`.
+- **Revisit** → `git` skill, per `$OPEN_PRS` → check out existing PR branch.
 
 ## Classify Change Origin
 
 Revisit only. Ask via `AskUserQuestion` → `$CHANGE_ORIGIN`:
 
-- **Upstream update** — the ACs changed. Build `delta` against updated ACs.
-- **Phase intent** — run driven by a direct instruction. Use `$PHASE_INTENT` as dispatch directive, scope `delta` to it. Absent → ask in the same prompt.
+- **Upstream update** — ACs changed → build `delta` against updated ACs.
+- **Phase intent** — direct instruction → use `$PHASE_INTENT` as dispatch directive, scope `delta` to it. Absent → ask in same prompt.
+
+## Investigate Root Cause
+
+Establish *why* the bug occurs before any fix agent runs. Both branches leave `$INVESTIGATION_DECISIONS` set.
+
+**Fresh:**
+
+- **Explore** — on the **Branch Prep** branch, spawn one `Explore` subagent per in-scope codebase **in parallel** to surface code paths behind the reported behaviour. Feed each: issue title + body, verbatim Acceptance Criteria. Each returns → implicated code paths + observed mechanism.
+- **Draft** — synthesise findings → investigation fields: Complexity, Root Cause (plain-English *why*, no file paths), Scope (product area), Fix Approach (`[domain]` tags + imperative bullets), Risk. `github-templates` skill → `comment-dev-investigation` → `$INVESTIGATION`.
+- **Approve gate** — ask via `AskUserQuestion`:
+  - **Approve** → proceed.
+  - **Revise** → fold feedback, redraft (re-spawn `Explore` if scope shifted), re-gate.
+  - **Reject** → abort; leave branch + board Status as set in **Fetch Bug Issue**.
+- **Post** — approved → `github` skill **Post Comment** → post `$INVESTIGATION` on `#bug_issue_number`. Hold fields → `$INVESTIGATION_DECISIONS`.
+
+**Revisit:**
+
+- **Load prior** — find the prior investigation comment on `#bug_issue_number` (the `comment-dev-investigation` render from the Fresh run) → prior fields.
+- **Revise / Keep gate** — ask via `AskUserQuestion`, framed by `$CHANGE_ORIGIN` / `delta`:
+  - **Keep** → root cause unchanged → carry prior fields → `$INVESTIGATION_DECISIONS`. No re-explore, no comment change.
+  - **Revise** → re-spawn `Explore` per in-scope codebase **in parallel**, scoped to `delta` / `$PHASE_INTENT`, diffed **vs `main`** (pre-fix state, never branch commits) → **redraft** investigation fields, *replacing* prior (no change-narration, no stale decisions), **grounded in original root cause** (bug as on `main`, not post-fix branch) → `github-templates` skill → `comment-dev-investigation` → `$INVESTIGATION` → **Approve gate** (Approve / Revise / Reject). Approved → `github` skill **update existing investigation comment in place** (not new). Hold fields → `$INVESTIGATION_DECISIONS`.
 
 ## Dispatch Agents
 
-Via `dispatch-agents` skill, always dispatch all three domains (`frontend`, `backend`, `devops`) with:
+`dispatch-agents` skill → dispatch fix agents:
 
 | Parameter | Value |
 |---|---|
-| `issue` | `{number, title, body}` of `#bug_issue_number` — agents derive root cause + scope themselves |
+| `issue` | `{number, title, body}` of `#bug_issue_number` |
 | `codebases` | `$CODEBASES` |
-| `agents` | `frontend`, `backend`, `devops` |
-| `delta` | Revisit only: `{satisfied, to_add, to_remove, to_rewrite, affected_files}`. `$CHANGE_ORIGIN = upstream` → compare open PR branch state against current ACs. `$CHANGE_ORIGIN = phase` → derive from `$PHASE_INTENT` |
+| `agents` | Domains named in investigation Fix Approach (fallback `frontend`, `backend`, `devops` if ambiguous) |
+| `decisions` | `type="investigation"` with Root Cause, Scope, Fix Approach, Risk verbatim (`$INVESTIGATION_DECISIONS`) — Fresh draft or Revisit revised-or-kept |
+| `delta` | Revisit only: `{satisfied, to_add, to_remove, to_rewrite, affected_files}` **vs `main`** (pre-fix state, never branch commits) → applied fix → `satisfied` (preserve); rest → `to_add` / `to_remove` / `to_rewrite`. `$CHANGE_ORIGIN = upstream` → vs current ACs. `$CHANGE_ORIGIN = phase` → from `$PHASE_INTENT` |
 
 Receive `$AGENT_RESULTS`.
 
 ## Commit and Push
 
-Via `git` skill, per codebase with `files_changed` in `$AGENT_RESULTS` → commit `fix(#<N>): <description>` → push. `<description>`:
+`git` skill, per codebase with `files_changed` in `$AGENT_RESULTS` → commit `fix(#<N>): <description>` → push. `<description>`:
 
 - Fresh → imperative-tense fix summary.
 - Revisit, `$CHANGE_ORIGIN = upstream` → `revise bug fix per updated ACs`.
@@ -79,21 +102,21 @@ Via `git` skill, per codebase with `files_changed` in `$AGENT_RESULTS` → commi
 
 ## Open PR
 
-**Fresh:** via `git` skill, per codebase that produced work → open a PR:
+**Fresh** → `git` skill, per codebase that produced work → open PR:
 
 - Base: `main`.
 - Title: `fix(#<N>): <short description>`.
 - Body: `pr-bug` template via `github-templates` skill.
 
-**Revisit:** no PR action — new commits appear on the existing PR.
+**Revisit** → no PR action; new commits land on existing PR.
 
 ## Notify
 
-Via `github` skill, run **Notify Implementation Complete** on `#bug_issue_number`:
+`github` skill → **Notify Implementation Complete** on `#bug_issue_number`:
 
 - mode = `implementation`.
 - variant = single-PR when exactly one PR, else multi-PR (one bullet per codebase).
-- Fresh → post a new completion comment. Revisit → update the existing one with current PR link(s).
+- Fresh → post new completion comment. Revisit → update existing one with current PR link(s).
 - Board: Status → `Implemented`.
 
 ## Next Step

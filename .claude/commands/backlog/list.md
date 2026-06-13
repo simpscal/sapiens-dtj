@@ -36,5 +36,5 @@ Bug
 
 ## Next Step
 
-- `/backlog:add` — capture another item
-- `/backlog:promote` — promote an item into the workflow
+- `/backlog capture another item` — quick-capture a new draft
+- `/backlog promote an item` — promote an item into the workflow

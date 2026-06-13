@@ -43,31 +43,25 @@ Via `github` skill, resolve active sprint → `$SPRINT_N`. None → halt `⛔ No
 
 ## Explore Codebase
 
-Via `git` skill, in each in-scope codebase → check out the sprint branch for `$SPRINT_N` (exploration reflects the exact base state the work builds on).
+**Where** — via `git` skill, check out the sprint branch for `$SPRINT_N` in each in-scope codebase (exploration reflects the exact base state the work builds on). Spawn one `Explore` subagent per in-scope codebase **in parallel**.
 
-Spawn one `Explore` subagent per in-scope codebase **in parallel**. Transformative work → find what must change; additive work → find what's missing.
+**Brief each subagent** — hand it the technical goal + scope from Discovery + the Resolve Blocking Questions categories its codebase must answer. Transformative → find what must change; additive → find what's missing. It forms own hypotheses, picks what to read — orient, don't checklist. Per-role starting points (orientation, not checklist):
 
-**Backend** (if in scope):
+- **backend** — code, services, patterns in the goal's path; plus backend tooling/DX (config, build scripts, manifests, linters, test setup).
+- **frontend** — components, hooks, state, shared primitives in the path; plus frontend tooling/DX (config, build scripts, manifests, linters, test/Storybook setup).
+- **infrastructure** — IaC resources, modules, config; plus CI/CD + platform tooling (pipelines, build/deploy scripts, runner config, environment setup).
 
-- Files, classes, services, patterns to change; coupling points, duplication, structural issues.
-- Backend tooling + DX: config files, build scripts, manifests, linters, test setup, tool setup files; missing/misconfigured tooling or capability gaps.
-- Additive → what's absent and where to introduce it.
-- Return: file paths, class/method/tool names, current pattern, what changes or is added and why.
+**Stop when** the subagent can, for its codebase:
 
-**Frontend** (if in scope):
+- name the closest existing analogue/pattern for each change or addition, with file path;
+- state the convention to follow or diverge from;
+- name where each new or changed piece lives.
 
-- Components, hooks, utilities, state management affected; shared code, duplication, abstraction gaps.
-- Frontend tooling + DX: config files, build scripts, manifests, linters, test/Storybook setup, tool setup files; missing/misconfigured tooling or capability gaps.
-- Additive → missing capabilities and where to introduce them.
-- Return: file paths, component/tool names, current pattern, what changes or is added and why.
+Can't resolve from code or tooling → blocking question, not a reason to keep probing.
 
-**Infrastructure** (if in scope):
+**Verify, don't assume** — confirm each claimed analogue/pattern by reading or grepping the real file, never from naming. Infrastructure → per resource, call the cloud/platform API for actual current state (running/stopped, attached/detached, exists/missing, rule present/absent). Don't assume or ask what tooling can confirm directly.
 
-- IaC resources, modules, config affected.
-- CI/CD + platform tooling: pipeline definitions, build/deploy scripts, runner config, environment setup; missing/misconfigured tooling or capability gaps.
-- Additive → missing pieces and where they belong.
-- **Query live state**: per infrastructure resource in the problem → call the relevant cloud/platform API to verify actual current state (running/stopped, attached/detached, exists/missing, rule present/absent). Don't assume or ask about what tooling can confirm directly.
-- Return: file paths, resource/tool names, current pattern, what changes or is added and why; plus live state findings.
+**Return** per finding: file path, symbol name (class/method/component/resource/tool), current pattern, what changes or is added and why; infrastructure adds live-state findings.
 
 ## Resolve Blocking Questions
 
