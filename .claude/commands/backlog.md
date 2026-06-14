@@ -18,6 +18,7 @@ Resolve `$ARGUMENTS` → stage + args.
 | Your words contain… | Run |
 |---|---|
 | add / capture / note / idea / jot / remember *(a description)* | `/backlog:add <description>` |
+| brainstorm / ideate / suggest features / what should we build | `/brainstorm <description>` |
 | list / show / view / what's in the backlog | `/backlog:list` |
 | promote / turn into issue / start / work on *(an existing item)* | `/backlog:promote` |
 

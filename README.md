@@ -32,7 +32,7 @@ flowchart LR
     subgraph ORCH["This Repo · Orchestrator"]
         direction TB
         ISSUES["GitHub Issues · Labels · Project Board<br/>requirements · stories · TDDs<br/>designs · bugs · backlog"]
-        FLOWS["Workflow Commands<br/>/backlog · /feature · /bugfix · /refactor"]
+        FLOWS["Workflow Commands<br/>/brainstorm · /backlog · /feature · /bugfix · /refactor"]
     end
 
     subgraph TARGETS["Your Code Repos"]
@@ -111,13 +111,14 @@ Each workflow has one natural-language entry command — just say what you want:
 
 ## 🔄 Workflows
 
-Four workflows, one shape: AI does the work, you approve at each gate — scope, plan, code review, release.
+Five workflows, one shape: AI does the work, you approve at each gate — scope, plan, code review, release.
 
 | Workflow | Entry | Covers |
 |----------|-------|--------|
 | [🆕 Feature](docs/workflows/feature.md) | `/feature` | Sprint cycle — requirement → stories → design → TDD → implement → release; plus in-sprint bugs & refactors that ride the sprint branch |
 | [🐛 Bugfix](docs/workflows/bugfix.md) | `/bugfix` | Production bug lifecycle — report → fix → release via `main` |
 | [🧹 Refactor](docs/workflows/refactor.md) | `/refactor` | Standalone tech-debt cleanup, no user-visible change — spec → implement → release via `main` |
+| 💡 Brainstorm | `/brainstorm` | Collaborative ideation — riff features with you against PRODUCT.md, score on strategic fit, drop the keepers into the backlog as drafts |
 | [🗂 Backlog](docs/workflows/backlog.md) | `/backlog` | Capture ideas, bugs, and refactors as drafts, then promote them into a workflow |
 
 Every phase pauses for human review before the next begins:
@@ -143,6 +144,7 @@ Say what you want — each workflow has one plain-English entry command that run
 | `/feature <text>` | Feature work — e.g. `start checkout revamp`, `write the stories`, `implement 42`, `ship sprint 3` |
 | `/bugfix <text>` | Bug work — e.g. `login returns 500`, `fix 26`, `close 26` |
 | `/refactor <text>` | Tech-debt — e.g. `tidy the payment module`, `implement 51` |
+| `/brainstorm <text>` | Brainstorm feature ideas with you, score them, drop keepers into the backlog — e.g. `ideas to boost conversion` |
 | `/backlog <text>` | Capture an idea or bug, or promote a draft into a workflow |
 | `/auto <text>` | Run a whole workflow end-to-end; clarifies the need up front, then pauses before pre-release |
 | `/setup` | One-off project setup — codebases, product doc, labels, board |
