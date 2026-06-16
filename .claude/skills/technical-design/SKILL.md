@@ -8,7 +8,22 @@ tools: Read, Edit, Write, Glob, Grep, Bash, AskUserQuestion, Agent
 
 ## Workflow
 
-Resolve in-scope roles → probe each role's codebase → fold in design context if supplied (Design context) → run Discovery (answer from probe findings; unresolvable items become blockers) → surface blockers in one message before drafting → draft the canonical sections in order → decompose foundational work into `[Tech]` stories → validate against Output Rules and Constraints. For revisions, also classify scope impact per story (Scope Classification).
+Resolve in-scope roles → probe each role's codebase → fold in design context if supplied (Design context) → run Discovery (answer from probe findings; unresolvable items become blockers) → surface blockers in one message before drafting → draft the canonical sections in order → decompose foundational work into `[Tech]` stories → validate against Constraints. For revisions, also classify scope impact (Scope Classification + Technical Stories Delta).
+
+## Inputs
+
+| Parameter | Required | Notes |
+|-----------|----------|-------|
+| `sprint_goal` | yes | From the requirement issue. |
+| `stories` | yes | `[{id, title, user_story, acceptance_criteria, notes}]` — in-scope user stories. Revisions add per-story implementation status. |
+| `requirement_body` | yes | Full requirement issue body. |
+| `available_codebases` | yes | `[{name, role ∈ {backend, frontend, infrastructure}, path}]`. |
+| `design_context` | no | Storybook surface stories — grounds frontend components + scope. `placeholder` blocks = out of scope (see Design context). |
+| `feedback` | no | Adjust-loop notes — create iterations only. |
+| `existing_tdd_body` | no | Prior TDD body. Present ⇒ revision mode → run Classification. |
+| `change_intent` | no | Feature-level scope delta (added/modified/removed). Revisions only; selects what to rewrite. |
+
+`existing_tdd_body` + `change_intent` present ⇒ revision; else fresh authoring.
 
 ## In-scope Resolution
 
@@ -94,9 +109,13 @@ Doesn't qualify (fold into owning user story): single endpoint for one story, si
 
 `[Tech]` ACs developer-verifiable only — never user-observable. Link dependent user stories via `required_by_titles`.
 
-## Scope Classification (revisions only)
+## Classification (revisions only)
 
-When revising, compare the revised TDD against each user story (ignore `[Tech]` stories). Emit a classification table at the end of the revised TDD.
+Revisions emit two tables — one per user story, one per `[Tech]` story.
+
+### Scope Classification (per user story)
+
+Compare the revised TDD against each user story (ignore `[Tech]` stories).
 
 | Classification | Condition | Action |
 |----------------|-----------|--------|
@@ -104,6 +123,17 @@ When revising, compare the revised TDD against each user story (ignore `[Tech]` 
 | `breaking` | Conflicts with existing implementation | Surface affected files/endpoints; caller decides regenerate vs migrate |
 | `structural` | Requires full revisit; treat affected files as blank slate | List affected files; recommend story regeneration |
 | `unaffected` | Story not touched | Note and move on |
+
+### Technical Stories Delta (per `[Tech]`)
+
+Match each `[Tech]` by title against the baseline TDD's `technical_stories` table.
+
+| Action | Condition |
+|--------|-----------|
+| `added` | New `[Tech]` work the baseline TDD lacked. |
+| `modified` | Existing `[Tech]` story whose scope/ACs changed. |
+| `removed` | Baseline `[Tech]` story no longer required. |
+| `unchanged` | Baseline `[Tech]` story still valid as-is. |
 
 ## Technical-story Spec
 
@@ -119,7 +149,24 @@ When revising, compare the revised TDD against each user story (ignore `[Tech]` 
   required_by_titles: ["<user-story title>", ...]
 ```
 
-## Output Rules
+## Returns
+
+`$TDD_RESULT`:
+
+```xml
+<tdd>
+  <body><!-- full TDD markdown — canonical sections 1–15 in order, present tense --></body>
+  <technical_stories><!-- list of [Tech] specs per Technical-story Spec --></technical_stories>
+  <scope_classification><!-- revisions only: Scope Classification table --></scope_classification>
+  <technical_stories_delta><!-- revisions only: Technical Stories Delta table --></technical_stories_delta>
+</tdd>
+```
+
+- `<body>` + `<technical_stories>` always present.
+- `<scope_classification>` + `<technical_stories_delta>` present only when `existing_tdd_body` supplied; omit on fresh authoring.
+- `<body>` = clean current-state snapshot, never a diff (see Constraints).
+
+## Constraints
 
 - Follow Canonical Sections order — never reorder.
 - Make risks + trade-offs explicit. Rejected an alternative under the current design -> say why in one line. Never narrate a prior version's approach as a rejected alternative.
@@ -128,11 +175,6 @@ When revising, compare the revised TDD against each user story (ignore `[Tech]` 
 - Terse + direct — fewest words per idea, no filler or restated context. Bullets/numbered lists over long paragraphs.
 - Components Design at actor level only — high-level actors + interconnections. Implementation specifics (signatures, members, query keys, state wiring) never appear anywhere in the TDD.
 - Ground every decision in codebase context — cite file paths, existing components, conventions. Justify any divergence.
-
-## Constraints
-
 - Never invent scope — run Discovery; do not assume product behaviour the caller hasn't specified.
 - Never decide product scope — surface as a blocker if missing.
 - Never add user-observable behaviour to `[Tech]` story ACs.
-- Never touch GitHub or external systems.
-- Filesystem: this skill's directory and in-scope codebase paths only.

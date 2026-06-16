@@ -141,7 +141,7 @@ Say what you want — each workflow has one plain-English entry command that run
 
 | Command | What it does |
 |---------|-------------|
-| `/feature <text>` | Feature work — e.g. `start checkout revamp`, `write the stories`, `implement 42`, `ship sprint 3` |
+| `/feature <text>` | Feature work — e.g. `start checkout revamp`, `write the stories`, `implement 42`, `fix bug in 42`, `refactor 42`, `ship sprint 3` |
 | `/bugfix <text>` | Bug work — e.g. `login returns 500`, `fix 26`, `close 26` |
 | `/refactor <text>` | Tech-debt — e.g. `tidy the payment module`, `implement 51` |
 | `/brainstorm <text>` | Brainstorm feature ideas with you, score them, drop keepers into the backlog — e.g. `ideas to boost conversion` |
