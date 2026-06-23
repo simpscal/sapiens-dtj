@@ -1,7 +1,7 @@
 ---
 name: backlog
 description: Natural-language entry point for the backlog — say what you want and it runs the proper /backlog:* sub-command.
-argument-hint: "[plain English — e.g. 'capture dark mode idea', 'show the backlog', 'promote an item']"
+argument-hint: "['capture dark mode idea', 'show the backlog', 'promote an item']"
 tools: Read, Bash, AskUserQuestion
 ---
 

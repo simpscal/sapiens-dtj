@@ -95,7 +95,7 @@ Each workflow has one natural-language entry command — just say what you want:
 /feature "Next feature on the backlog"
 ```
 
-`/feature`, `/bugfix`, and `/refactor` read your plain-English intent and run the right phase. To drive an entire workflow end-to-end (requirement → stories → design → TDD → implement) — auto-approving routine gates, clarifying the need with you up front, then pausing before pre-release — use `/auto`:
+`/feature`, `/bugfix`, and `/refactor` read your intent and run the right phase. To drive an entire workflow end-to-end (requirement → stories → design → TDD → implement) — auto-approving routine gates, clarifying the need with you up front, then pausing before pre-release — use `/auto`:
 
 ```
 /auto "Next feature on the backlog"
@@ -137,7 +137,7 @@ Run `/auto` to flow through every phase automatically — it clarifies the need 
 
 ## ⚡ Commands
 
-Say what you want — each workflow has one plain-English entry command that runs the right step:
+Say what you want — each workflow has one entry command that runs the right step:
 
 | Command | What it does |
 |---------|-------------|

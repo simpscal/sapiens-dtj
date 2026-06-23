@@ -20,10 +20,10 @@
 | frontend | [#N](https://github.com/<owner>/<repo>/pull/N) |
 
 ### Migrations
-<⚠️ Migration detected — run the cutover script from the backend PR body manually against production after deploy. | None>
+<⚠️ Migration detected — run the cutover script from the sprint TDD Migration Plan manually against production after deploy. | None>
 
 ---
-> ⏸ Human gate: Review and merge the release PRs into main. If a migration is present, run its cutover script from the PR body manually against production after deploy.
+> ⏸ Human gate: Review and merge the release PRs into main. If a migration is present, run its cutover script from the sprint TDD Migration Plan manually against production after deploy.
 ```
 
 ---
@@ -36,4 +36,4 @@
 | `closed_date` | yes | `YYYY-MM-DD` |
 | `stories` | yes | All sprint stories, sorted by issue number ascending, exact GitHub titles |
 | `release_prs` | yes | Changed codebases only — codebase name, full PR link in `[#N](url)` format |
-| `migrations` | yes | Warning phrase above or `None` — set when backend changes introduce a migration whose cutover script must be run by hand on production (detection rule from the `project-config` skill) |
+| `migrations` | yes | Warning phrase above or `None` — set when backend changes introduce a migration whose cutover script (from the sprint TDD Migration Plan) must be run by hand on production (presence detection rule from the `project-config` skill) |

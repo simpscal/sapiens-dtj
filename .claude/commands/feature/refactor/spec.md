@@ -91,7 +91,6 @@ Produce:
 - **Trade-offs** — honest, not a sales pitch:
   - **Wins** — what the approach buys (decoupling, enforceability, testability, …).
   - **Costs** — what the team lives with (boilerplate, indirection, runtime overhead, maintenance/drift risk).
-- **Migration Plan** — three bullets, **Data migration** / **Cutover** / **Rollback**, mirroring the TDD's Migration Plan. Carry over whatever the **Migration** blocking question surfaced. Migrations are scripts run manually against the target DB (deploy auto-applies none) — state the forward + rollback scripts and that cutover SQL is documented in the PR body, not committed. Verify locally during implementation. Nothing migrates → single bullet `N/A — no data migration required`.
 - **Affected Codebases** — each codebase + area of change.
 - **Definition of Done**:
   - Always: "All existing tests pass" + "No user-visible behavior change".

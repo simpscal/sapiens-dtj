@@ -78,10 +78,10 @@ Proceed only when every codebase with changes builds clean + all tests pass.
 
 ## Check for Migrations (Backend Only)
 
-For the backend codebase → find the open refactor PR for issue N → scan its changed files against the migration detection rule from `project-config` skill.
+For the backend codebase → find the open refactor PR for issue N → scan its changed files against the migration detection rule from `project-config` skill (presence check).
 
 - No backend PR → "No backend PR found for #N — skipping migration check."
-- Migration files found → surface warning.
+- Migration files found → read cutover + rollback SQL from the **refactor spec issue's Migration Plan** → surface warning with the scripts.
 - No migration files → "No database migrations in this refactor."
 
 ## Post Summary

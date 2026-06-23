@@ -1,7 +1,7 @@
 ---
 name: auto
 description: Run a feature / refactor / bugfix workflow end-to-end (A→Z), auto-approving routine gates. Pauses to clarify the need up front (discovery) and again before the pre-release phase.
-argument-hint: "[plain English — what you want, or nothing to continue the in-flight item]"
+argument-hint: "[what you want, or nothing to continue the in-flight item]"
 tools: Read, Write, Bash, AskUserQuestion
 ---
 

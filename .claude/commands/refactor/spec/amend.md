@@ -105,7 +105,7 @@ Change Summary lives only in the draft for review — never in the issue body.
 | Scope | Files/modules added or removed |
 | Technical Approach | Steps reordered, replaced, or added |
 | Trade-offs | Approach changed, or a new cost surfaced |
-| Migration Plan | Data migration, cutover, or rollback added/changed/obsolete (set `N/A — no data migration required` when obsolete) |
+| Migration Plan | Data migration, or cutover/rollback SQL added/changed/obsolete — revise the fenced ```sql scripts in place (set `N/A — no data migration required` when obsolete) |
 | Affected Codebases | Codebase added or dropped |
 | Definition of Done | New objective criterion, or one no longer applies |
 
