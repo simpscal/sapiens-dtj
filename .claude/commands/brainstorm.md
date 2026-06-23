@@ -1,7 +1,7 @@
 ---
 name: brainstorm
 description: Brainstorm candidate features WITH the user — a collaborative ideation session grounded in PRODUCT.md — clarify and score each on strategic fit, then write the keepers as Feature backlog drafts.
-argument-hint: "[plain English theme — e.g. 'ideas to boost checkout conversion', or nothing to ideate from product strategy]"
+argument-hint: "[theme — 'ideas to boost checkout conversion', or nothing to ideate from product strategy]"
 tools: Read, Write, Bash, AskUserQuestion
 ---
 

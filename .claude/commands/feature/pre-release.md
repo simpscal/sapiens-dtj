@@ -84,9 +84,11 @@ Proceed only when every codebase builds clean + all tests pass.
 
 ## Check for Migrations (Backend Only)
 
-List files changed between `main` and `{sprint_branch}` in the backend repo → apply the migration detection rule from `project-config` skill → capture the filtered list (if any) for **Create Release PRs (Sprint Branch → Main)**.
+List files changed between `main` and `{sprint_branch}` in the backend repo → apply the migration detection rule from `project-config` skill (presence check).
 
-No migration files → note "No database migrations in this sprint."
+- Migration files present → read cutover + rollback SQL from the **sprint TDD's Migration Plan** → capture for **Create Release PRs (Sprint Branch → Main)**.
+
+- No migration files → note "No database migrations in this sprint."
 
 ## Create Release PRs (Sprint Branch → Main)
 

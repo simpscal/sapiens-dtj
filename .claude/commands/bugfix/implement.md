@@ -64,7 +64,7 @@ Establish *why* the bug occurs before any fix agent runs. Both branches leave `$
 **Fresh:**
 
 - **Explore** — on the **Branch Prep** branch, spawn one `Explore` subagent per in-scope codebase **in parallel** to surface code paths behind the reported behaviour. Feed each: issue title + body, verbatim Acceptance Criteria. Each returns → implicated code paths + observed mechanism.
-- **Draft** — synthesise findings → investigation fields: Complexity, Root Cause (plain-English *why*, no file paths), Scope (product area), Fix Approach (`[domain]` tags + imperative bullets), Risk. `github-templates` skill → `comment-dev-investigation` → `$INVESTIGATION`.
+- **Draft** — synthesise findings → investigation fields: Complexity, Root Cause (plain-English *why*, no file paths), Scope (product area), Fix Approach (`[domain]` tags + imperative bullets), Risk, Migration Plan (when the fix needs a migration → fenced ```sql cutover + rollback DDL per migration in apply order; omit when none). `github-templates` skill → `comment-dev-investigation` → `$INVESTIGATION`.
 - **Approve gate** — ask via `AskUserQuestion`:
   - **Approve** → proceed.
   - **Revise** → fold feedback, redraft (re-spawn `Explore` if scope shifted), re-gate.

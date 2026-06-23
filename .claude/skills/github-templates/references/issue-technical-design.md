@@ -76,7 +76,21 @@ Part of #<requirement_issue_number>
 
 ## 5. Migration Plan
 
-<Data migration, cutover, rollback>
+<Data migration, cutover, rollback. If migrations — per migration in apply order:>
+
+**<migration name>** `[NEW|MODIFIED]`
+
+_Up (cutover):_
+```sql
+<cutover DDL>
+```
+
+_Down (rollback):_
+```sql
+<rollback DDL>
+```
+
+<If none: `N/A — no data migration required`>
 
 ### Monitoring & Alerting
 <Metrics, thresholds>
@@ -105,5 +119,5 @@ Part of #<requirement_issue_number>
 | `security` | yes | Auth, authz, encryption at rest and in transit |
 | `scalability` | yes | Throughput/latency targets, scaling approach |
 | `failure_modes` | yes | Table: Scenario, Impact, Mitigation — min 2 rows |
-| `migration` | yes | Cutover + rollback, or `N/A — no data migration required` |
+| `migration` | yes | Per migration in apply order: fenced ```sql Up (cutover) + Down (rollback) DDL. Or `N/A — no data migration required` |
 | `monitoring` | yes | Key metrics, alert thresholds |

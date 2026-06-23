@@ -9,10 +9,10 @@
 **Date**: YYYY-MM-DD
 
 ### Migrations
-<⚠️ Migration detected — run the cutover script (from the PR body) manually against production after deploy. | None>
+<⚠️ Migration detected — run the cutover script (from the refactor spec Migration Plan) manually against production after deploy. | None>
 
 ---
-> ⏸ Human gate: If a migration is present, run its cutover script from the PR body manually against production after deploy.
+> ⏸ Human gate: If a migration is present, run its cutover script from the refactor spec Migration Plan manually against production after deploy.
 ```
 
 Omit `---` separator and human gate entirely when no migrations.
@@ -25,4 +25,4 @@ Omit `---` separator and human gate entirely when no migrations.
 |-------|-----|-------|
 | `issue` | yes | `#N — <title>` — em dash `—`, exact GitHub title |
 | `date` | yes | `YYYY-MM-DD` |
-| `migrations` | yes | Warning phrase above or `None` — set when the refactor PR introduces a migration whose cutover script must be run by hand on production |
+| `migrations` | yes | Warning phrase above or `None` — set when the refactor PR introduces a migration whose cutover script (from the refactor spec Migration Plan) must be run by hand on production |

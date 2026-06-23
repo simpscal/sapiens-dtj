@@ -1,7 +1,7 @@
 ---
 name: bugfix
 description: Natural-language entry point for the bugfix workflow — say what you want and it runs the proper /bugfix:* sub-command.
-argument-hint: "[plain English — 'login 500s' → 'ACs for 26' → 'fix 26' → 'ready? 26' → 'close 26']"
+argument-hint: "['login 500s', 'ACs for 26', 'fix 26', 'ready? 26', 'close 26']"
 tools: Read, Bash, AskUserQuestion
 ---
 

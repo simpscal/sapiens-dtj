@@ -2,7 +2,7 @@
 
 ## OUTPUT FORMAT
 
-```
+````
 ## Refactoring Task
 
 ### Problem Statement
@@ -40,8 +40,14 @@
 
 ### Migration Plan
 - **Data migration**: <schema / data / state to migrate, or none>
-- **Cutover**: <forward script>
-- **Rollback**: <reverse script>
+- **Cutover**:
+```sql
+<forward DDL>
+```
+- **Rollback**:
+```sql
+<reverse DDL>
+```
 
 ### Affected Codebases
 - <backend | frontend | infrastructure>
@@ -50,7 +56,7 @@
 - [ ] All existing tests pass
 - [ ] No user-visible behavior change
 - [ ] <additional specific DoD item>
-```
+````
 
 ---
 
@@ -63,6 +69,6 @@
 | `scope` | yes | Bullet list of specific files, modules, or layers |
 | `technical_approach` | yes | Steps under the fixed subheadings shown, in that order; skip unaffected groups; numbering resets per group |
 | `trade_offs` | yes | Bullets — **Wins**, **Costs** |
-| `migration` | yes | Three bullets — **Data migration**, **Cutover**, **Rollback** — or the single bullet `N/A — no data migration required` |
+| `migration` | yes | **Data migration** bullet + fenced ```sql **Cutover** + **Rollback** DDL — or the single bullet `N/A — no data migration required` |
 | `affected_codebases` | yes | `backend` \| `frontend` \| `infrastructure` — one per line |
 | `definition_of_done` | yes | Always include "All existing tests pass" and "No user-visible behavior change"; add specifics |

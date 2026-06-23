@@ -1,7 +1,7 @@
 ---
 name: refactor
 description: Natural-language entry point for the refactor workflow — say what you want and it runs the proper /refactor:* sub-command.
-argument-hint: "[plain English — 'tidy payment module' → 'implement 51' → 'ready? 51' → 'close 51']"
+argument-hint: "['tidy payment module', 'implement 51', 'ready? 51', 'close 51']"
 tools: Read, Bash, AskUserQuestion
 ---
 
