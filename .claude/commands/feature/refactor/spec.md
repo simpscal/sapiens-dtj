@@ -80,7 +80,13 @@ Skip categories that clearly don't apply.
 
 ## Design Refactoring Spec
 
-From exploration findings, draft the full spec. No implementation code. Terse + direct — fragments over sentences, no filler; keep every field.
+From exploration findings, draft the full spec. No implementation code. Keep every field.
+
+**Writing style** — terse, scannable; mirror the TDD Writing Style:
+- Bullets / numbered over paragraphs — never a multi-sentence paragraph where a list works; one fact per bullet, one action per step. Long paragraph → split into bullets or numbered points.
+- Cut filler + articles; fewest words per idea.
+- Arrows (`→`) for transitions, flows, mappings — not prose.
+- Deltas only — state what changes; don't re-justify unchanged behaviour.
 
 Produce:
 

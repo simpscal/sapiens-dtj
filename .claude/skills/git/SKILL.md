@@ -1,6 +1,6 @@
 ---
 name: git
-description: Use for git and GitHub PR operations — creating branches (sprint, story, bug, revert, refactor), checkout, commit, push, and PR create/read/list/review/delete. Confirms before mutating ops. Pairs with `github-templates` (PR/comment body content) and `dispatch-agents` (typical upstream that hands off file changes to commit). Do NOT use for resolving merge conflicts, rebasing history, writing commit messages from scratch, or issue-tracker operations (use `github` skill).
+description: Use for git and GitHub PR operations. Owns the local-git + PR surface — branches (sprint, story, bug, revert, refactor), checkout, commit, push, and PR create/read/list/review/delete. Confirms before mutating ops.
 tools: Bash
 ---
 

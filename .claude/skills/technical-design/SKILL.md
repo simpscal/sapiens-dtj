@@ -1,7 +1,7 @@
 ---
 name: technical-design
-description: Use when writing, revising, or reviewing a Technical Design Document (TDD) for a feature, epic, or set of user stories. Pairs with the `user-stories` skill — typically run after stories exist. Probes the codebase to ground decisions in existing patterns, produces a design across backend/frontend/infrastructure, and decomposes foundational work into `[Tech]` stories. Do NOT use for product scope decisions (caller owns those), PRDs, user-facing story authoring (use `user-stories`), or pure code review. Does not touch external systems; the caller owns all orchestration.
-tools: Read, Edit, Write, Glob, Grep, Bash, AskUserQuestion, Agent
+description: Use when writing, revising, or reviewing a Technical Design Document (TDD) for a feature, epic, or set of user stories. Owns the technical design across backend/frontend/infrastructure and the decomposition of foundational work into `[Tech]` stories — grounded in existing codebase patterns and, when infra is in scope, live infrastructure state. Typically run after stories exist.
+tools: Read, Glob, Grep, Bash, Agent
 ---
 
 # Technical Design Expertise
@@ -43,13 +43,13 @@ Read `CLAUDE.md` (+ any role-scoped equivalent) before probing. The agent forms 
 - Identified convention to follow or diverge from.
 - Named where each new piece lives.
 
-Unresolved item -> Discovery blocker. Don't probe indefinitely. Verify, don't assume: confirm each analogue/convention by reading the real file, never from memory of naming.
+Unresolved item -> Discovery blocker. Don't probe indefinitely. Verify, don't assume: confirm each analogue/convention by reading the real file, never from memory of naming. Infrastructure in scope → per resource, call the cloud/platform API for actual current state (running/stopped, attached/detached, exists/missing, rule present/absent) — don't infer it from IaC source. Can't confirm via tooling → Discovery blocker.
 
 | Role | Starting points |
 |------|-----------------|
 | `backend` | Existing entities, models, DB tables; command/query handlers, services, repositories; API controllers/routes; auth/authz patterns. Record file paths, names, conventions, gaps. |
 | `frontend` | Existing pages, routes, feature folders; components; API client calls/hooks; state slices/query keys. Shared primitives/components/tokens — exist or closest analogue. Record file paths, names, conventions, gaps. |
-| `infrastructure` | Existing modules/resources for the implied capability; config to extend. Record resource names, types, conventions, gaps. |
+| `infrastructure` | Existing modules/resources for the implied capability; config to extend. Record resource names, types, conventions, gaps, plus live-state findings (actual deployed state, not IaC-assumed). |
 
 ## Design context
 
@@ -69,8 +69,8 @@ Answer from codebase context first; only unresolvable items become blockers. Whe
 | Integration boundaries | External services? Contract ownership? |
 | NFRs | Latency/throughput targets? Data volume? SLA? |
 | Real-time vs async | Live updates, webhooks, polling, batch? |
-| Migration & compatibility | Data to migrate? Destructive schema? Backward compat? |
-| Infrastructure constraints | Cloud/region/cost limits? |
+| Migration & compatibility | Data to migrate? Destructive schema? Backward compat? Confirm current live schema/state before designing the migration. |
+| Infrastructure constraints | Cloud/region/cost limits? Ground against live infra state, not IaC-assumed. |
 | Rollout | Feature flag? Gradual? Rollback trigger? |
 | Cross-team | Blocking/blocked? Shared contracts? |
 
