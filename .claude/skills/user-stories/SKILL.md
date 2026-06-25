@@ -1,7 +1,7 @@
 ---
 name: user-stories
-description: Use when writing, reviewing, splitting, or refining user stories and acceptance criteria for a product backlog. Enforces INVEST, a testability linter on every AC, and a structured story spec contract. Do NOT use for PRDs, technical specs, epics, or architecture work — for epics, capture the epic separately first, then use this skill to decompose it. Does not touch external systems; the caller owns all orchestration.
-tools: Read, Edit, Write, AskUserQuestion
+description: Use when writing, reviewing, splitting, or refining user stories and acceptance criteria for a product backlog. Owns story + AC quality — the INVEST gate, the per-AC testability linter, and the structured story-spec contract. Touches no filesystem or external system; the caller owns all orchestration.
+tools: AskUserQuestion
 ---
 
 # User Story Expertise

@@ -92,6 +92,7 @@ Per section → decide whether the confirmed change affects it → keep unchange
 Revised body reads as if authored fresh:
 
 - present tense
+- bullets / numbered over paragraphs — long paragraph → split into one-fact bullets or numbered steps (mirror the TDD Writing Style); arrows (`→`) for transitions, not prose
 - replace superseded Problem / Approach / Trade-off content in place
 - drop obsolete steps, costs, or decisions rather than annotating them
 - no change-narration (no "previously/now", "no longer", "changed from")
@@ -127,8 +128,9 @@ Change Summary lives only in the draft for review — never in the issue body.
 ## Update Issue
 
 1. Via `github` skill, update body of `#$ISSUE_NUMBER` with the revised spec (`issue-refactoring` template via `github-templates` skill).
-2. Delete `$DRAFT` via `Bash: rm`.
-3. Report: `Refactor #<N> amended. Scope: <delta>. Approach: <delta>. DoD: <delta>.`
+2. Via `github` skill **Set Board Status** → `Todo` (side effect of the approved amendment — no second confirmation).
+3. Delete `$DRAFT` via `Bash: rm`.
+4. Report: `Refactor #<N> amended. Scope: <delta>. Approach: <delta>. DoD: <delta>.`
 
 ## Next Step
 

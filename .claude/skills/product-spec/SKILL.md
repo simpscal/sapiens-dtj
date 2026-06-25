@@ -1,7 +1,7 @@
 ---
 name: product-spec
-description: Use when creating, amending, or editing `PRODUCT.md` — the foundational product context document covering Vision, Core Value Proposition, Business Model, Business Goals, Target Users, Product Boundaries, and Strategic Direction. Pairs with downstream skills (`user-stories` and `technical-design` reference Boundaries and Goals). Do NOT use for: PRDs, feature specs, roadmaps, OKRs, or any document that changes more than quarterly. Does not touch external systems; the caller owns all orchestration.
-tools: Read, Write, Edit, AskUserQuestion
+description: Use when creating, amending, or editing `PRODUCT.md`. Owns the foundational product-context document — Vision, Core Value Proposition, Business Model, Business Goals, Target Users, Product Boundaries, Strategic Direction.
+tools: Read, Write, AskUserQuestion
 ---
 
 # PRODUCT.md Authoring

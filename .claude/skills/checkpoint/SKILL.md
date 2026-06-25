@@ -1,7 +1,7 @@
 ---
 name: checkpoint
-description: Use to read, write, or clear workflow resume state under `.claude/state/<workflow>.json`. Auto-invoke at workflow entry (read + resume prompt) and after each step completes (write). Single source of truth for resume across feature, bugfix, refactor.
-tools: Read, Write, Edit, Bash
+description: Use at workflow entry (read + resume prompt) and after each step completes (write). Owns workflow resume state under `.claude/state/<workflow>.json` — the single source of truth for resume across feature, bugfix, refactor.
+tools: Read, Write, Bash
 ---
 
 ## File Layout

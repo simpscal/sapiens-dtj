@@ -1,6 +1,6 @@
 ---
 name: dispatch-agents
-description: Use when implementing a user story, bug, or technical work item by fanning out parallel agents across the backend, frontend, and devops domains. Loads context, builds the `<context>` XML block, spawns agents in parallel, and collects structured results. Do NOT use for: branch creation, commits, PRs, issue comments, notifications, or any orchestration outside the dispatch itself — the caller owns all of that. Pairs with the `technical-design` skill (consumes its TDD output) and the `user-stories` skill (consumes the ACs).
+description: Use when implementing a user story, bug, or technical item across domains. Owns the parallel fan-out across backend/frontend/devops and collection of their structured results.
 tools: Agent, Read
 ---
 

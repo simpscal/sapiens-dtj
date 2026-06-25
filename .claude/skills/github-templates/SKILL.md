@@ -1,7 +1,7 @@
 ---
 name: github-templates
-description: Use to format GitHub issue bodies, PR descriptions, and issue/PR comments via the project's template library. Pairs with `github` (issue ops), `git` (PR ops), and `dispatch-agents` (completion comments). Do NOT use for: freeform markdown, README content, or any document outside the issue/PR/comment surface.
-tools: Read, Glob
+description: Use to produce GitHub issue bodies, PR descriptions, and issue/PR comments. Owns template lookup-and-fill for the issue/PR/comment surface — the single source for their structure.
+tools: Read
 ---
 
 # GitHub Templates

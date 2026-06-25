@@ -1,6 +1,6 @@
 ---
 name: github
-description: Use for GitHub issue and project-board operations — create/read/update/close issues, post/update comments, manage labels, drive the project board (status, type, sprint, drafts), load sprint context, and post completion notifications (implementation, refactor, revert). Confirms before mutating ops. Do NOT use for PR operations (use `git` skill), issue body authoring from scratch (caller provides content), or cross-repo issue linking.
+description: Use for GitHub issue and project-board operations. Owns the issue + project-board surface — issues (create/read/update/close), comments, labels, the board (status, type, sprint, drafts), sprint-context loading, and completion notifications. Confirms before mutating ops.
 tools: Bash
 ---
 
