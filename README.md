@@ -75,14 +75,22 @@ cp -r sapiens-dtj/.claude /path/to/your/project/
 
 ### 2. Run setup
 
-Inside Claude Code, run `/setup` and pick **All**. It generates:
+Inside Claude Code, bootstrap the project from scratch:
+
+```
+/setup from scratch
+```
+
+It generates:
 
 | Artifact | Purpose |
 |----------|---------|
 | `.claude/skills/project-config/SKILL.md` | Registers codebases, detects tech stack, configures migration detection |
-| `PRODUCT.md` | Captures vision, value proposition, business model, goals, strategic direction |
 | GitHub labels | `requirement`, `user-story`, `bug`, etc. — safe to re-run |
 | GitHub Project board | Status / Type / Sprint fields — the workflow's tracking surface; safe to re-run |
+| `PRODUCT.md` | Captures vision, value proposition, business model, goals, strategic direction |
+| `DESIGN_THEME.md` | Captures the binding visual/UX theme — atmosphere, color roles, typography, layout patterns, motion, voice |
+| Design system (in the frontend repo) | Conforms token values to `DESIGN_THEME.md` + authors Storybook stories — tokens (colors, borders, typography, elevation, radius) and components grouped by category; opens a PR |
 
 > [!TIP]
 > Give every registered codebase its own `CLAUDE.md`. The implementation agents read it to learn each repo's build/test commands, folder structure, naming, and patterns — the richer it is, the more the generated code matches your conventions. Skip it and agents fall back to inference, which is slower and less faithful.
@@ -105,7 +113,7 @@ Each workflow has one natural-language entry command — just say what you want:
 > Not sure which workflow? Just describe the work to `/feature`, `/bugfix`, or `/refactor` — each routes to the right step. Or `/auto` to run it end-to-end.
 
 > [!NOTE]
-> Non-disruptive. Only `.claude/` and `PRODUCT.md` are added. Existing issues, PRs, and branches stay untouched.
+> Non-disruptive. Only `.claude/`, `PRODUCT.md`, and `DESIGN_THEME.md` are added. Existing issues, PRs, and branches stay untouched.
 
 ---
 
@@ -147,7 +155,7 @@ Say what you want — each workflow has one entry command that runs the right st
 | `/brainstorm <text>` | Brainstorm feature ideas with you, score them, drop keepers into the backlog — e.g. `ideas to boost conversion` |
 | `/backlog <text>` | Capture an idea or bug, or promote a draft into a workflow |
 | `/auto <text>` | Run a whole workflow end-to-end; clarifies the need up front, then pauses before pre-release |
-| `/setup` | One-off project setup — codebases, product doc, labels, board |
+| `/setup <text>` | One-off project setup — codebases, product doc, labels, board, design system — e.g. `everything`, `project config`, `design system` |
 
 ---
 

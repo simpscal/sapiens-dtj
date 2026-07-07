@@ -11,10 +11,11 @@ Navigator supplies `$SPRINT_N`.
 ## Workflow
 1. Load Sprint Context
 2. Filter UI Stories
-3. Run UI Design (ui-design agent)
-4. Review Agent Output
-5. Commit, PR, Notify
-6. Next Step
+3. Enumerate Surfaces
+4. Run UI Design (ui-design agents — one per surface, parallel)
+5. Review Agent Output
+6. Commit, PR, Notify
+7. Next Step
 
 ## Load Sprint Context
 
@@ -26,49 +27,54 @@ Via `github` skill, load Sprint Snapshot for Sprint $SPRINT_N → `$STORIES`, `$
 
 Restrict `$STORIES` to `[Story]`-prefixed titles (exclude `[Tech]`, `[Revert]`) → filter to entries with user-facing UI changes → `$UI_STORIES`. Empty → halt `No UI work found in this sprint — skipping design phase.`
 
+## Enumerate Surfaces
+
+Derive the customer-facing surfaces the `$UI_STORIES` ACs affect → `$SURFACES_TO_DESIGN` (per entry: `slug`, `route`, `name`, the ACs affecting it).
+
+- Exclude admin routes + the OAuth callback.
+- Many-to-many: an AC may touch several surfaces; a surface may draw from several ACs.
+
+Empty → halt `No customer-facing surface found for the UI stories — skipping design phase.`
+
 ## Run UI Design
 
 Check out the sprint branch for Sprint $SPRINT_N.
 
-Spawn one **ui-design** agent with a `<context>` block:
+Spawn **one ui-design agent per `$SURFACES_TO_DESIGN` entry, in parallel** (single message, multiple Agent calls). Each agent gets its own `<context>`:
 
 ```xml
 <context>
   <codebase path="[frontend path]" branch="[sprint branch]" />
-  <story_acs>
-    <story number="..." title="...">
-- [ ] [verbatim ACs from $UI_STORIES]
-    </story>
-  </story_acs>
-  <change_input>[present only on an Adjust re-run — the $ADJUSTMENT feedback]</change_input>
+  <surface slug="[slug]" route="[route]" name="[name]" />
+  <requirement>
+    [verbatim ACs for THIS surface + on an Adjust re-run, the $ADJUSTMENT for this surface]
+  </requirement>
 </context>
 ```
 
-Omit sections that don't apply.
-
-Collect: `$SURFACE_FILES` ← `<files_changed>`, `$SURFACES` ← `<surfaces_composed>`, `$CONFIRMATIONS` ← `<confirmations>`.
+Collect across agents: `$SURFACE_FILES` ← each `<surface><story_file>`, `$SURFACES` ← each `<surface>`, `$COMPONENT_CHANGES` ← each `<authored_components><component>` (name + new|modified + summary), `$THEME_STATUS` ← `diverged` if any agent returns diverged, else `applied`/`absent`.
 
 ## Review Agent Output
 
-`AskUserQuestion`:
+`AskUserQuestion` (`$THEME_STATUS` = `diverged` → prepend `⚠ Design diverged from DESIGN_THEME.md.`; `$COMPONENT_CHANGES` non-empty → append line `Components added/changed: <$COMPONENT_CHANGES list>`):
 
-> Surfaces composed: `<$SURFACES list>`. `<count>` assumption(s) need confirmation: `<render each $CONFIRMATIONS item>`:
+> Surfaces composed: `<$SURFACES list>`:
 > - **Approve** → commit the stories
 > - **Adjust** → describe corrections → re-run the design
 > - **Cancel** → abort; stories stay on disk, commit nothing
 
-- **Adjust** → `$ADJUSTMENT` → fold into `<change_input>` → re-run **Run UI Design** → return to this gate
+- **Adjust** → `$ADJUSTMENT` → fold into the affected surfaces' `<requirement>` → re-spawn only those surfaces' ui-design agents → return to this gate
 - **Cancel** → halt; stories on disk, nothing committed
 - **Approve** → **Commit, PR, Notify**
 
 ## Commit, PR, Notify
 
-Via `git` skill → commit all Storybook surface stories on the frontend sprint branch (`chore(design): sprint-{$SPRINT_N} surface stories`) → push.
+Via `git` skill → commit all Storybook surface stories **+ any changed shared components and their component stories** on the frontend sprint branch (`chore(design): sprint-{$SPRINT_N} surface stories`; `$COMPONENT_CHANGES` non-empty → append ` + kit`) → push.
 
 Via `git` skill, open a PR from the sprint branch:
 
 - **Title**: `chore(design): sprint-<$SPRINT_N> Storybook surface stories`.
-- **Body**: `pr-design-system` template (via `github-templates` skill) with `{summary, atmosphere: "N/A — feature sprint", layout_pattern: "N/A", requirement_issue: $REQUIREMENT_ISSUE_NUMBER}`.
+- **Body**: `pr-designs` template (via `github-templates` skill) with `{summary, surfaces: $SURFACES (name + layout + states), component_changes: $COMPONENT_CHANGES, requirement_issue: $REQUIREMENT_ISSUE_NUMBER}`.
 
 Hold PR URL → `$DESIGN_PR_LINK`.
 

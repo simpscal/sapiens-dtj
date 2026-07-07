@@ -1,6 +1,6 @@
 ---
 name: setup:product
-description: Generate `PRODUCT.md` at the repo root via the product-spec skill.
+description: Generate `PRODUCT.md` at the repo root via the product skill.
 tools: Read, Write, Edit, AskUserQuestion
 ---
 
@@ -12,7 +12,7 @@ tools: Read, Write, Edit, AskUserQuestion
 
 ## Generate PRODUCT.md
 
-Via `product-spec` skill, create `PRODUCT.md` at the repo root — it handles the full workflow: existence check (Skip / Regenerate gate), interview, write, confirm.
+Via `product` skill, create `PRODUCT.md` at the repo root — it handles the full workflow: existence check (Skip / Regenerate gate), interview, write, confirm.
 
 ## Next Step
 

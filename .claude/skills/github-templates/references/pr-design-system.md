@@ -4,13 +4,19 @@
 
 ```
 ## Summary
-<1-2 sentences: what changed in the design system and why>
+<1-2 sentences: what was conformed/authored and why — tokens follow DESIGN_THEME.md, Storybook stories authored>
 
-## Design Direction
-- **Atmosphere:** <atmosphere summary>
-- **Layout pattern:** <layout pattern>
+## Tokens
+- **<role>** — <old> → <new>
 
-Refs [#<requirement_issue>](<requirement_issue_url>)
+## Component Refactor
+- **<Component>** — <change>
+
+## Token Stories
+Colors · Borders · Typography · Elevation · Radius
+
+## Component Stories
+- **<Category>** — <count>
 ```
 
 ---
@@ -19,8 +25,8 @@ Refs [#<requirement_issue>](<requirement_issue_url>)
 
 | Field | Req | Notes |
 |-------|-----|-------|
-| `summary` | yes | 1-2 sentences: what changed + why |
-| `atmosphere` | yes | From `$DESIGN_INTENT.atmosphere` |
-| `layout_pattern` | yes | From `$DESIGN_INTENT.layout_pattern` |
-| `requirement_issue` | yes | Parent requirement issue number (no `#`) |
-| `requirement_issue_url` | yes | Full GitHub URL of parent issue |
+| `summary` | yes | 1-2 sentences: what changed + why (tokens conformed to `DESIGN_THEME.md`, component kit refactored, stories authored) |
+| `tokens_changed` | yes | One row per adjusted token role — role + old → new value |
+| `components_refactored` | yes | One row per refactored component — component + change. Zero refactors → omit the section |
+| `token_stories` | yes | The five token stories authored/refreshed |
+| `component_categories` | yes | One row per category — category + story count |

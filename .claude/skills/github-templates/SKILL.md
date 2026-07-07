@@ -48,6 +48,7 @@ Rules:
 | PR: Bug Fix | `pr-bug` | `references/pr-bug.md` |
 | PR: Revert | `pr-revert` | `references/pr-revert.md` |
 | PR: Release | `pr-release` | `references/pr-release.md` |
+| PR: Designs | `pr-designs` | `references/pr-designs.md` |
 | PR: Design System | `pr-design-system` | `references/pr-design-system.md` |
 | Comment: Sprint Summary | `comment-sprint-summary` | `references/comment-sprint-summary.md` |
 | Comment: Dev Investigation | `comment-dev-investigation` | `references/comment-dev-investigation.md` |

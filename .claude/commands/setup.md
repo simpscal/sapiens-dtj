@@ -1,50 +1,45 @@
 ---
 name: setup
-description: One-off project setup navigator — pick mode (all / project-config / board / product / design), run resume check, then dispatch to the mode file.
-tools: Read, AskUserQuestion, Bash
+description: Natural-language entry point for project setup — say what you want and it routes to the right phase. Full setup runs all phases in sequence.
+argument-hint: "['set up everything', 'project config', 'provision the board', 'generate PRODUCT.md', 'design system']"
+tools: Read, AskUserQuestion
 ---
 
-# Setup — Navigator
+# /setup — Setup Workflow Router
 
-## Workflow
-1. Pick Mode
-2. Resume Check
-3. Dispatch
+Resolve `$ARGUMENTS` → one setup phase (or the full sequence). Execute the existing `setup/<phase>.md` workflow inline.
 
-## Pick Mode
+## Interpret Intent
 
-Ask via `AskUserQuestion` → `$MODE`:
+Resolve `$ARGUMENTS` → phase:
 
-- **All** — full first-time setup (project-config → board → product) in sequence.
-- **Project Config** — generate `.claude/skills/project-config/SKILL.md` (codebases, tech stack, migration rules).
-- **Board** — create GitHub labels, then provision the GitHub Project board (Status / Type / Sprint fields).
-- **Product** — generate `PRODUCT.md` at the repo root.
+| Your words contain… | Run |
+|---|---|
+| all / everything / full setup / from scratch / initialize / bootstrap | **all** *(sequence — see Dispatch)* |
+| project config / codebases / stack / migration rules | `project-config` |
+| board / labels / project board / github project / tracking | `board` |
+| product / PRODUCT.md / vision / value prop / target users | `product` |
+| design system / theme / DESIGN_THEME / tokens / storybook / component stories / style guide / visual / UI direction / atmosphere | `design-system` |
 
-## Resume Check
+Empty input or unclear phase → ask **one** `AskUserQuestion` (All / Project Config / Board / Product / Design System) → resolve.
 
-Map `$MODE` → run key:
-
-| Mode | run_key |
-|------|---------|
-| All | `all` |
-| Project Config | `project-config` |
-| Labels | `labels` |
-| Board | `board` |
-| Product | `product` |
-
-Look up resume state (`workflow = setup`, `run_key = <mapped key>`). Exists → ask via `AskUserQuestion`:
-
-- **Resume** → skip completed steps; replay stored decisions + artifacts.
-- **Restart** → clear state; start from mode file's first step.
-- **Cancel** → abort; leave state untouched.
+Echo before running: `▶ /setup <phase>` (or `▶ /setup all`).
 
 ## Dispatch
 
-**Single mode** (`project-config` / `board` / `product` / `design`): read `setup/<$MODE>.md` → follow from first step.
+For each phase: read `.claude/commands/setup/<phase>.md`, execute its workflow from the first step, interview the user via `AskUserQuestion` exactly as the file directs.
 
-**All mode** — read + follow each in sequence:
-1. `setup/project-config.md`
-2. `setup/board.md`
-3. `setup/product.md`
+**Single phase** → run the resolved phase → report the artifact written or skipped.
 
-Each runs from its first step. Subcommand exits early (artifact exists, user chose Skip) → proceed to next. After all three → output a summary of artifacts written vs skipped. All three exit early → output `All artifacts already exist — nothing to generate.`
+**All** → run phases **one at a time, in order**, finishing each before the next:
+
+1. `project-config`
+2. `board`
+3. `product`
+4. `design-system`
+
+Sequence respects ordering — config first; product before design-system so the theme's atmosphere can draw on product context; design-system last — it generates the theme, then conforms the frontend to it. Each phase file carries its own existence-check gate (Skip / Regenerate), so re-running `all` skips completed artifacts and fills only the gaps.
+
+## Summarize
+
+After the run, output artifacts written vs skipped — one line per phase. All phases skipped in an `all` run → `All artifacts already exist — nothing to generate.`

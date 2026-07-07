@@ -10,7 +10,7 @@ tools: Read, Write, Glob, Grep, Bash, AskUserQuestion
 1. Existence Check
 2. Gather Codebase Names and Paths
 3. Detect Tech Stack
-4. Detect Component Inventory
+4. Detect Component Directory
 5. Gather Migration Detection
 6. Write the project-config Skill
 7. Confirm
@@ -52,7 +52,7 @@ Per codebase path, detect the stack:
 
 Resolve the path relative to the repo root. Inspect via `Glob` + `Read`. Compose a one-line summary per codebase (e.g. `Next.js 14 frontend with TypeScript`, `ASP.NET Core 8 REST API with EF Core`).
 
-## Detect Component Inventory
+## Detect Component Directory
 
 Per frontend-framework codebase (React, Vue, Angular, Svelte, etc.), scan for the shared component directory:
 
@@ -61,13 +61,6 @@ Per frontend-framework codebase (React, Vue, Angular, Svelte, etc.), scan for th
 - Multiple candidates → pick the one with the most `.tsx` / `.vue` / `.svelte` component files.
 
 Hold the directory as `$COMPONENT_DIRS` — one entry per frontend codebase (codebase name → relative component directory path). Omit non-frontend codebases.
-
-Then build `$COMPONENT_TABLE` — per frontend codebase in `$COMPONENT_DIRS`:
-
-1. List all component files (`.tsx` / `.vue` / `.svelte`) in the detected directory (top-level only, skip subdirectories).
-2. Per file, scan `export` statements → exported names (components, hooks, variant helpers, interfaces).
-3. Infer a short purpose from name, props, underlying library (e.g. "Checkbox input (Radix)", "Content carousel (Embla)").
-4. Hold as rows: `| {filename} | {exports} | {purpose} |`.
 
 ## Gather Migration Detection
 
@@ -82,7 +75,7 @@ Write `.claude/skills/project-config/SKILL.md` with the collected data. Copy fro
 ```markdown
 ---
 name: project-config
-description: Use to look up project-specific codebase paths, component inventory paths, and migration-detection rules. Auto-invoke whenever a workflow needs a codebase path (api, web, infrastructure), the component directory, or PR migration detection. Single source of truth — never hardcode any of these.
+description: Use to look up project-specific codebase paths, component directory path, and migration-detection rules. Auto-invoke whenever a workflow needs a codebase path (api, web, infrastructure), the component directory, or PR migration detection. Single source of truth — never hardcode any of these.
 tools: Read
 ---
 
@@ -92,15 +85,9 @@ tools: Read
 |------|------|---------|
 {one row per codebase: | {name} | `{path}` | {summary} |}
 
-## Component Inventory
+## Components
 
-Shared components live in `{codebase_name}` → `{component_dir}`.
-
-| File | Export(s) | Purpose |
-|------|-----------|---------|
-{one row per component file from $COMPONENT_TABLE}
-
-Feature, page, layout, and admin components live in their respective directories and are discoverable by reading the codebase.
+Shared components live in `{codebase_name}` → `{component_dir}`. Feature, page, layout, and admin components live in their respective directories and are discoverable by reading the codebase.
 
 {Omit this section entirely if $COMPONENT_DIRS is empty.}
 

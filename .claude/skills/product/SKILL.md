@@ -1,5 +1,5 @@
 ---
-name: product-spec
+name: product
 description: Use when creating, amending, or editing `PRODUCT.md`. Owns the foundational product-context document — Vision, Core Value Proposition, Business Model, Business Goals, Target Users, Product Boundaries, Strategic Direction.
 tools: Read, Write, AskUserQuestion
 ---
