@@ -13,7 +13,7 @@ Navigator supplies `$SPRINT_N`.
 2. Load Sprint Context
 3. Build Change Plan
 4. Draft + Approve Loop
-5. Run UI Design (ui-design agent)
+5. Run UI Design (ui-design agents — one per regen surface, parallel)
 6. Review Agent Output
 7. Commit + Push
 8. Upsert Design Hub Comment
@@ -38,7 +38,7 @@ Restrict `$STORIES` to `[Story]`-prefixed titles (exclude `[Tech]`, `[Revert]`).
 
 Resolve the frontend codebase → check out its sprint branch for Sprint $SPRINT_N.
 
-Scan `src/stories/surfaces/` for `*.stories.tsx` → `$EXISTING_SURFACES` (slug = filename PascalCase → kebab-case). Per file → read rendered states + component list → `$SURFACE_STORIES[slug]`.
+Scan existing surface stories → `$EXISTING_SURFACES` (slug per file). Per file → read rendered states + component list → `$SURFACE_STORIES[slug]`.
 
 Parse the hub comment's surfaces table → `$HUB_SURFACES` (slug + route + name per documented surface).
 
@@ -89,43 +89,38 @@ Do not touch surface stories or the hub comment until approved.
 
 ## Run UI Design
 
-Spawn one **ui-design** agent with a `<context>` block:
+Spawn **one ui-design agent per `$REGEN_SURFACES` surface, in parallel** (single message, multiple Agent calls). Each agent gets its own `<context>`:
 
 ```xml
 <context>
   <codebase path="[frontend path]" branch="[sprint branch]" />
-  <story_acs>
-    <story number="..." title="...">
-- [ ] [verbatim ACs for regen surfaces]
-    </story>
-  </story_acs>
-  <change_input>
-    Regenerate: [each $REGEN_SURFACES surface + what changed]
-    Remove: [each $REMOVED_SURFACES surface]
-  </change_input>
+  <surface slug="[slug]" route="[route]" name="[name]" />
+  <requirement>
+    [verbatim ACs for THIS surface + what changed]
+  </requirement>
 </context>
 ```
 
-Agent regenerates + removes the surface story files per the change plan.
-
-Collect: `$SURFACES` ← `<surfaces_composed>`, `$CONFIRMATIONS` ← `<confirmations>`.
+Collect across agents: `$SURFACES` ← each `<surface>`, `$COMPONENT_CHANGES` ← each `<authored_components><component>` (name + new|modified + summary), `$THEME_STATUS` ← `diverged` if any agent returns diverged, else `applied`/`absent`.
 
 ## Review Agent Output
 
-`AskUserQuestion`:
+`AskUserQuestion` (`$THEME_STATUS` = `diverged` → prepend `⚠ Design diverged from DESIGN_THEME.md.`; `$COMPONENT_CHANGES` non-empty → append line `Components added/changed: <$COMPONENT_CHANGES list>`):
 
-> Surfaces composed: `<$SURFACES list>`. `<count>` assumption(s) need confirmation: `<render each $CONFIRMATIONS item>`:
+> Surfaces composed: `<$SURFACES list>`:
 > - **Approve** → commit the stories
 > - **Adjust** → describe corrections → re-run the design
 > - **Cancel** → abort; stories stay on disk, commit nothing
 
-- **Adjust** → `$ADJUSTMENT` → fold into `<change_input>` → re-run **Run UI Design** → return to this gate
+- **Adjust** → `$ADJUSTMENT` → fold into the affected surfaces' `<requirement>` → re-spawn only those surfaces' ui-design agents → return to this gate
 - **Cancel** → halt; stories on disk, nothing committed
 - **Approve** → **Commit + Push**
 
 ## Commit + Push
 
-Via `git` skill → commit updated / created / deleted Storybook surface stories on the frontend sprint branch (`chore(design): regenerate sprint-{$SPRINT_N} surfaces`) → push → resolve blob URLs.
+Delete each `$REMOVED_SURFACES` story file from the surfaces folder. Removing a surface story never deletes shared components — they may have other consumers.
+
+Via `git` skill → commit updated / created / deleted Storybook surface stories **+ any changed shared components (`src/components/`) and their component stories (`src/stories/components/`)** on the frontend sprint branch (`chore(design): regenerate sprint-{$SPRINT_N} surfaces`; `$COMPONENT_CHANGES` non-empty → append ` + kit`) → push → resolve blob URLs.
 
 ## Upsert Design Hub Comment
 

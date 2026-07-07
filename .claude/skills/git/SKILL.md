@@ -67,6 +67,7 @@ Before any mutating op: summarise all planned mutations in one block, ask once `
 | Revert | `revert/issue-{N}-{short-description}` | `main` |
 | Refactor (standalone) | `refactor/issue-{N}-{short-description}` | `main` |
 | Refactor (in-sprint) | `refactor/issue-{N}-{short-description}` | `feature/sprint-{N}` |
+| Design system (setup) | `chore/design-system` | codebase default branch |
 
 Base fixed by caller, never inferred — caller names which Branch Naming row applies. Standalone bug/refactor → base off `main`; in-sprint bug/refactor → base off sprint branch.
 
